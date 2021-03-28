@@ -2,56 +2,155 @@ import time
 import numpy
 import random
 import math
-# sursa de invatare / documentatie: https://towardsdatascience.com/recommendation-system-matrix-factorization-d61978660b4b
+import json
+# sursa de invatare / documentatie pentru Funk MF: https://towardsdatascience.com/recommendation-system-matrix-factorization-d61978660b4b
+
+
+class User:
+
+    nameToUser = {}
+
+    def __init__(self, matrixRow, userName, location):
+
+        self.userName = userName
+        self.location = location
+        self.matrixRow = matrixRow
+
+        User.nameToUser.update({userName: self})
+
+
+class Item:
+
+    nameToItem = {}
+
+    def __init__(self, matrixColumn, itemName):
+
+        self.itemName = itemName
+        self.matrixColumn = matrixColumn
+
+        Item.nameToItem.update({itemName: self})
 
 
 class Info:
 
-    FEATURES_CNT = 0
-    USERS_CNT = 0
-    ITEMS_CNT = 0
+    @staticmethod
+    def randomTestInput():
 
-    R = None
+        userCnt = 1000
+        itemCnt = 50
 
-    @classmethod
-    def randomTestInput(cls):
+        R = numpy.random.rand(userCnt, itemCnt)
 
-        cls.USERS_CNT = random.randint(10, 20)
-        cls.ITEMS_CNT = random.randint(20, 30)
-        cls.FEATURES_CNT = 1
-
-        cls.R = numpy.random.rand(cls.USERS_CNT, cls.ITEMS_CNT)
-
-        for user in range(cls.USERS_CNT):
-            for item in range(cls.ITEMS_CNT):
+        for user in range(userCnt):
+            for item in range(itemCnt):
                 a = random.random()
                 if a < 0.7:
-                    cls.R[user][item] = 0
+                    R[user][item] = 0
 
-    @classmethod
-    def parseInput(cls):
+        return userCnt, itemCnt, R
 
-        inputMatrixFile = open("inputMatrix.txt", "r")
+    @staticmethod
+    def parseRmatrix(inputFileName="Rmatrix.txt"):
+
+        inputMatrixFile = open(inputFileName, "r")
         inputMatrix = inputMatrixFile.read()
-        inputMatrix = inputMatrix.split('\n')
 
-        matrixDimensionsL = inputMatrix[0].split()
-        cls.USERS_CNT = int(matrixDimensionsL[0])
-        cls.ITEMS_CNT = int(matrixDimensionsL[1])
+        R = []
 
-        cls.FEATURES_CNT = 3  # deocamdata pt teste
+        for line in inputMatrix.split('\n'):
 
-        inputMatrix = inputMatrix[1:]
+            line = [float(el) for el in line.split()]
+            R.append(line)
 
-        for i in range(len(inputMatrix)):
-            inputMatrix[i] = [float(el) for el in inputMatrix[i].split()]
+        userCnt = len(R)
+        itemCnt = len(R[0])
 
-        cls.R = numpy.array(inputMatrix)
+        return userCnt, itemCnt, numpy.array(R)
+
+    @staticmethod
+    def parsePmatrix(inputFileName="Pmatrix.txt"):
+
+        inputMatrixFile = open(inputFileName, "r")
+        inputMatrix = inputMatrixFile.read()
+
+        P = []
+
+        cnt = 0
+        for line in inputMatrix.split('\n'):
+
+            line = line.split()
+            userName = line[0]
+            line = [float(el) for el in line[1:]]
+
+            if userName not in User.nameToUser.keys():
+                User(cnt, userName, (None, None))
+            else:
+                User.nameToUser[userName].matrixRow = cnt
+
+            P.append(line)
+            cnt += 1
+
+        userCnt = len(P)
+        featureCnt = len(P[0])
+
+        return userCnt, featureCnt, numpy.array(P)
+
+    @staticmethod
+    def parseQmatrix(inputFileName="Qmatrix.txt"):
+
+        inputMatrixFile = open(inputFileName, "r")
+        inputMatrix = inputMatrixFile.read()
+
+        Q = []
+
+        cnt = 0
+        for line in inputMatrix.split('\n'):
+
+            line = line.split()
+            itemName = line[0]
+            line = [float(el) for el in line[1:]]
+
+            if itemName not in Item.nameToItem.keys():
+                Item(cnt, itemName)
+            else:
+                Item.nameToItem[itemName].matrixColumn = cnt
+
+            Q.append(line)
+            cnt += 1
+
+        Q = numpy.array(Q)
+        Q = Q.T
+
+        featureCnt = len(Q)
+        itemCnt = len(Q[0])
+
+        return featureCnt, itemCnt, numpy.array(Q)
+
+    @staticmethod
+    def getConfigOpts(inputFileName="ConfigFile.json"):
+
+        # matrixOption - optiunea pentru algoritmul folosit pt searching:
+        # (update adica trecerea de la a folosi matricea R nemodificata la a factoriza in P si Q)
+        #   0 - matricea R, cand trec de un anumit prag de utilizatori sa faca update automat cat
+        #   1 - matricea R tot timpul, fara sa faca update automat dupa un anumit prag de utilizatori
+        #   2 - matricile P si Q, calculate in urma factorizarii
+        #   3 - matricea R din calculeaza la initializare P si Q indiferent de numarul de utilizatori
+        #
+        # updateThreshold - pragul pentru care fac update, (doar pentru matrixOption 0, ignorat in rest)
+        #
+        # Rmatrix - numele fisierului unde se gaseste matricea R (ignorat pentru matrixOption 2)
+        # Pmatrix - numele fisierului unde se gaseste matricea P (ignorat pentru matrixOption 1)
+        # Qmatrix - numele fisierului unde se gaseste matricea Q (ignorat pentru matrixOption 1)
+
+        inputFile = open(inputFileName, "r")
+        inputStr = inputFile.read()
+
+        configOpts = json.loads(inputStr)
+        return configOpts
 
 
 class Learner:
 
-    OVERSHOTS = 0
     PRINT_TESTING = True
 
     @staticmethod
@@ -59,33 +158,52 @@ class Learner:
 
         for i in range(TCNT):
 
-            # Info.parseInput()
-            Info.randomTestInput()
+            # userCnt, itemCnt, R = Info.parseRmatrix()
+            userCnt, itemCnt, R = Info.randomTestInput()
+            featureCnt = 20
 
-            ml = Learner(R=Info.R, userCnt=Info.USERS_CNT, featureCnt=Info.FEATURES_CNT, itemCnt=Info.ITEMS_CNT)
+            ml = Learner(R=R, userCnt=userCnt, featureCnt=featureCnt, itemCnt=itemCnt, stdLearningRate=0.1)
 
-            t = time.time()
+            status = ml.factorizeMatrix()
+            print(status)
 
-            P, Q, MSE = ml.factorizeMatrix()
-
-            print(f"time elapsed: {time.time() - t}; MSE: {MSE}; overshots: {Learner.OVERSHOTS}", end='\n\n')
-
-            R = numpy.empty((Info.USERS_CNT, Info.ITEMS_CNT), numpy.float64)
+            R = numpy.empty((userCnt, itemCnt), numpy.float64)
 
             if Learner.PRINT_TESTING is True:
-                for user in range(Info.USERS_CNT):
-                    for item in range(Info.ITEMS_CNT):
-                        if Info.R[user][item] > 0:
-                            print(Info.R[user][item] - numpy.dot(P[user, :], Q[:, item]), end=" ")
-                        else:
-                            print("new" + 15 * " ", end=" ")
-                    print()
 
-    def __init__(self, userCnt, itemCnt, featureCnt, R=None, P=None, Q=None, stdRoundCnt=5000, stdLearningRate=0.005, stdAcceptanceThreshold=0.1):
+                maxDif = float('-inf')
+
+                for user in range(userCnt):
+                    for item in range(itemCnt):
+                        if R[user][item] > 0 and R[user][item] - numpy.dot(ml.P[user, :], ml.Q[:, item]) > maxDif:
+                            maxDif = R[user][item] - numpy.dot(ml.P[user, :], ml.Q[:, item])
+                print(maxDif)
+
+    @staticmethod
+    def euclideanDistance(v1, v2):
+
+        d = 0
+        for i in range(len(v1)):
+            d += (v1[i] - v2[i]) ** 2
+
+        return math.sqrt(d)
+
+    @staticmethod
+    def cosineSimilarity(v1, v2):
+
+        dotProduct = numpy.dot(v1, v2)
+        v1Norm = numpy.linalg.norm(v1)
+        v2Norm = numpy.linalg.norm(v2)
+
+        return dotProduct / (v1Norm * v2Norm)
+
+    def __init__(self, userCnt, itemCnt, featureCnt, R=None, P=None, Q=None, useFactorization=True, stdRoundCnt=5000, stdLearningRate=0.005, stdAcceptanceThreshold=0.1, stdMinProgress=0.00001):
 
         self.R = R
         self.Q = Q
         self.P = P
+
+        self.useFactorization = useFactorization
 
         self.userCnt = userCnt
         self.itemCnt = itemCnt
@@ -93,11 +211,11 @@ class Learner:
         self.stdRoundCnt = stdRoundCnt
         self.stdLearningRate = stdLearningRate
         self.stdAcceptanceThreshold = stdAcceptanceThreshold
+        self.stdMinProgress = stdMinProgress
 
-    def factorizeMatrix(self, roundCnt=None, learningRate=None, acceptanceThreshold=None):
+    def factorizeMatrix(self, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None):
 
-        # var pentru testare daca fac overshoot peste minim cu learning rate prea mare
-        oldMSE = float('inf')
+        returnStatus = ""
 
         if self.R is None:
             raise ValueError("R matrix is not initialized!")
@@ -112,8 +230,14 @@ class Learner:
             acceptanceThreshold = self.stdAcceptanceThreshold
         acceptanceThreshold *= self.userCnt * self.itemCnt / 10
 
-        P = numpy.random.rand(self.userCnt, self.featureCnt)
-        Q = numpy.random.rand(self.featureCnt, self.itemCnt)
+        if minProgress is None:
+            minProgress = self.stdMinProgress
+
+        self.P = numpy.random.rand(self.userCnt, self.featureCnt)
+        self.Q = numpy.random.rand(self.featureCnt, self.itemCnt)
+
+        oldMSE = float('inf')
+        startTime = time.time()
 
         for r in range(roundCnt):
 
@@ -121,133 +245,260 @@ class Learner:
                 for item in range(self.itemCnt):
                     if self.R[user][item] > 0:
 
-                        err = self.R[user][item] - numpy.dot(P[user, :], Q[:, item])
+                        err = self.R[user][item] - numpy.dot(self.P[user, :], self.Q[:, item])
 
                         for feature in range(self.featureCnt):
 
-                            aux = P[user][feature]
-                            P[user][feature] += 2 * learningRate * err * Q[feature][item]
-                            Q[feature][item] += 2 * learningRate * err * aux
+                            aux = self.P[user][feature]
+                            self.P[user][feature] += 2 * learningRate * err * self.Q[feature][item]
+                            self.Q[feature][item] += 2 * learningRate * err * aux
 
             MSE = 0
             for user in range(self.userCnt):
                 for item in range(self.itemCnt):
                     if self.R[user][item] > 0:
 
-                        MSE += (self.R[user][item] - numpy.dot(P[user, :], Q[:, item])) ** 2
+                        MSE += (self.R[user][item] - numpy.dot(self.P[user, :], self.Q[:, item])) ** 2
 
+            # print(oldMSE)
             if MSE > oldMSE:
-                Learner.OVERSHOTS += 1
+                returnStatus += f"min value overshot"
                 oldMSE = MSE
                 break
 
-            if oldMSE - MSE < 0.00001:
-                print(f"pleateau achieved: {oldMSE - MSE}")
+            if oldMSE - MSE < minProgress:
+                returnStatus += f"pleateau achieved: {oldMSE - MSE}"
                 break
 
             oldMSE = MSE
 
             if MSE < acceptanceThreshold:
-                print(f"acceptance threshold reached: (MSE = {MSE})")
+                returnStatus += f"acceptance threshold reached: (MSE = {MSE})"
                 break
 
-        return P, Q, oldMSE
+        returnStatus += f"\ntime elapsed: {time.time() - startTime}; MSE: {oldMSE}\n"
+
+        return returnStatus
 
     # !!!!!!!!!!!! mentine Q fixat !!!!!!!!!!!!!!!!!
-    def addNewUser(self, newRline, roundCnt=None, learningRate=None, acceptanceThreshold=None):
+    def addNewUser(self, newRline, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None, matrixFactorized=None):
 
-        if self.P is None or self.Q is None:
-            raise ValueError("P or Q matrices are not initialized!")
+        if matrixFactorized is None:
+            matrixFactorized = self.useFactorization
 
-        if roundCnt is None:
-            roundCnt = self.stdRoundCnt
+        if matrixFactorized is True:
 
-        if learningRate is None:
-            learningRate = self.stdLearningRate
+            returnStatus = ""
 
-        if acceptanceThreshold is None:
-            acceptanceThreshold = self.stdAcceptanceThreshold
+            if self.P is None or self.Q is None:
+                raise ValueError("P or Q matrices are not initialized!")
 
-        newPline = numpy.random.rand(self.featureCnt)
+            if roundCnt is None:
+                roundCnt = self.stdRoundCnt
 
-        for r in range(roundCnt):
+            if learningRate is None:
+                learningRate = self.stdLearningRate
 
-            for item in range(self.itemCnt):
-                if newRline[item] > 0:
+            if acceptanceThreshold is None:
+                acceptanceThreshold = self.stdAcceptanceThreshold
+            acceptanceThreshold *= self.userCnt * self.itemCnt / 10
 
-                    err = newRline[item] - numpy.dot(newPline, self.Q[:, item])
+            if minProgress is None:
+                minProgress = self.stdMinProgress
 
-                    for feature in range(self.featureCnt):
-                        newPline[feature] += 2 * learningRate * err * self.Q[feature][item]
+            newPline = numpy.random.rand(self.featureCnt)
 
-            MSE = 0
-            for item in range(self.itemCnt):
-                if newRline[item] > 0:
+            oldMSE = float('inf')
+            startTime = time.time()
 
-                    MSE += newRline[item] - numpy.dot(newPline, self.Q[:, item])
+            for r in range(roundCnt):
 
-            if MSE < acceptanceThreshold:
-                break
+                for item in range(self.itemCnt):
+                    if newRline[item] > 0:
+
+                        err = newRline[item] - numpy.dot(newPline, self.Q[:, item])
+
+                        for feature in range(self.featureCnt):
+                            newPline[feature] += 2 * learningRate * err * self.Q[feature][item]
+
+                MSE = 0
+                for item in range(self.itemCnt):
+                    if newRline[item] > 0:
+
+                        MSE += newRline[item] - numpy.dot(newPline, self.Q[:, item])
+
+                if MSE > oldMSE:
+                    returnStatus += f"min value overshot"
+                    oldMSE = MSE
+                    break
+
+                if oldMSE - MSE < minProgress:
+                    returnStatus += f"pleateau achieved: {oldMSE - MSE}"
+                    break
+
+                oldMSE = MSE
+
+                if MSE < acceptanceThreshold:
+                    returnStatus += f"acceptance threshold reached: (MSE = {MSE})"
+                    break
+
+            self.P = numpy.vstack([self.P, newPline])
+            self.userCnt += 1
+
+            returnStatus += f"\ntime elapsed: {time.time() - startTime}; MSE: {oldMSE}\n"
+
+            return returnStatus
+
+        else:  # cazul cand fac update doar la matricea R
+            self.R = numpy.vstack([self.R, newRline])
 
     # !!!!!!!!!!!! mentine Q fixat !!!!!!!!!!!!!!!!!
-    def changeUser(self, userIndex, updatedRline, roundCnt=None, learningRate=None, acceptanceThreshold=None):
+    def changeUser(self, userIndex, updatedRline, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None, matrixFactorized=None):
 
-        if self.P is None or self.Q is None:
-            raise ValueError("P or Q matrices are not initialized!")
+        if matrixFactorized is None:
+            matrixFactorized = self.useFactorization
 
-        if roundCnt is None:
-            roundCnt = self.stdRoundCnt
+        if matrixFactorized is True:
 
-        if learningRate is None:
-            learningRate = self.stdLearningRate
+            returnStatus = ""
 
-        if acceptanceThreshold is None:
-            acceptanceThreshold = self.stdAcceptanceThreshold
+            if self.P is None or self.Q is None:
+                raise ValueError("P or Q matrices are not initialized!")
 
-        for r in range(roundCnt):
+            if roundCnt is None:
+                roundCnt = self.stdRoundCnt
 
-            for item in range(self.itemCnt):
-                if updatedRline[item] > 0:
+            if learningRate is None:
+                learningRate = self.stdLearningRate
 
-                    err = updatedRline[item] - numpy.dot(self.P[userIndex, :], self.Q[:, item])
+            if acceptanceThreshold is None:
+                acceptanceThreshold = self.stdAcceptanceThreshold
+            acceptanceThreshold *= self.userCnt * self.itemCnt / 10
 
-                    for feature in range(self.featureCnt):
-                        self.P[userIndex][feature] += 2 * learningRate * err * self.Q[feature][item]
+            if minProgress is None:
+                minProgress = self.stdMinProgress
 
-            MSE = 0
-            for item in range(self.itemCnt):
-                if updatedRline[item] > 0:
+            oldMSE = float('inf')
+            startTime = time.time()
 
-                    MSE += updatedRline[item] - numpy.dot(self.P[userIndex, :], self.Q[:, item])
+            for r in range(roundCnt):
 
-            if MSE < acceptanceThreshold:
-                break
+                for item in range(self.itemCnt):
+                    if updatedRline[item] > 0:
+
+                        err = updatedRline[item] - numpy.dot(self.P[userIndex, :], self.Q[:, item])
+
+                        for feature in range(self.featureCnt):
+                            self.P[userIndex][feature] += 2 * learningRate * err * self.Q[feature][item]
+
+                MSE = 0
+                for item in range(self.itemCnt):
+                    if updatedRline[item] > 0:
+
+                        MSE += updatedRline[item] - numpy.dot(self.P[userIndex, :], self.Q[:, item])
+
+                if MSE > oldMSE:
+                    returnStatus += f"min value overshot"
+                    oldMSE = MSE
+                    break
+
+                if oldMSE - MSE < minProgress:
+                    returnStatus += f"pleateau achieved: {oldMSE - MSE}"
+                    break
+
+                oldMSE = MSE
+
+                if MSE < acceptanceThreshold:
+                    returnStatus += f"acceptance threshold reached: (MSE = {MSE})"
+                    break
+
+            returnStatus += f"\ntime elapsed: {time.time() - startTime}; MSE: {oldMSE}\n"
+
+            return returnStatus
+
+        else:  # cazul cand fac update doar la matricea R
+            self.R[userIndex] = updatedRline
 
 
-Learner.test1(1)
+# voi avea un fisier in care retin starea curenta a recommender ului pentru cazul cand inchid serverul
+
+class Recommender:
+
+    def __init__(self, configFileName="ConfigFile.json"):
+
+        self.learner = None
+
+        self.config = Info.getConfigOpts(configFileName)
+
+        if self.config["matrixOption"] == 0:
+
+            # cand va fi cazul,
+            # va trebui sa apelez din recommender factorizarea matricii
+            # si sa setez self.learner.useFactorization = True
+
+            userCnt, itemCnt, R = Info.parseRmatrix()
+
+            useFactorization = False
+            if userCnt >= self.config["updateThreshold"]:
+                useFactorization = True
+
+            self.learner = Learner(R=R, P=None, Q=None,
+                                   useFactorization=useFactorization,
+                                   userCnt=userCnt,
+                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   itemCnt=itemCnt,
+                                   stdLearningRate=self.config["stdLearningRate"],
+                                   stdMinProgress=self.config["stdMinProgress"],
+                                   stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
+                                   stdRoundCnt=self.config["stdRoundCnt"])
+
+        elif self.config["matrixOption"] == 1:
+
+            userCnt, itemCnt, R = Info.parseRmatrix()
+
+            self.learner = Learner(R=R, P=None, Q=None,
+                                   useFactorization=False,
+                                   userCnt=userCnt,
+                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   itemCnt=itemCnt,
+                                   stdLearningRate=self.config["stdLearningRate"],
+                                   stdMinProgress=self.config["stdMinProgress"],
+                                   stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
+                                   stdRoundCnt=self.config["stdRoundCnt"])
+
+        elif self.config["matrixOption"] == 2:
+
+            userCnt, featureCnt, P = Info.parsePmatrix()
+            featureCnt, itemCnt, Q = Info.parseQmatrix()
+
+            self.learner = Learner(R=None, P=P, Q=Q,
+                                   userCnt=userCnt,
+                                   useFactorization=True,
+                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   itemCnt=itemCnt,
+                                   stdLearningRate=self.config["stdLearningRate"],
+                                   stdMinProgress=self.config["stdMinProgress"],
+                                   stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
+                                   stdRoundCnt=self.config["stdRoundCnt"])
+
+        elif self.config["matrixOption"] == 3:
+
+            userCnt, itemCnt, R = Info.parseRmatrix()
+
+            self.learner = Learner(R=R, P=None, Q=None,
+                                   userCnt=userCnt,
+                                   useFactorization=True,
+                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   itemCnt=itemCnt,
+                                   stdLearningRate=self.config["stdLearningRate"],
+                                   stdMinProgress=self.config["stdMinProgress"],
+                                   stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
+                                   stdRoundCnt=self.config["stdRoundCnt"])
+
+            self.learner.factorizeMatrix()
 
 
-'''for user in range(Info.USERS_CNT):
-    for feature in range(Info.FEATURES_CNT):
-        print(P[user][feature], end=" ")
-    print()
+# Learner.test1(10)
 
-print()
+# a = Recommender()
 
-for feature in range(Info.FEATURES_CNT):
-    for item in range(Info.ITEMS_CNT):
-        print(Q[feature][item], end=" ")
-    print()'''
-
-'''R = [[0 for j in range(Info.ITEMS_CNT)] for i in range(Info.USERS_CNT)]
-for i in range(Info.USERS_CNT):
-    for j in range(Info.ITEMS_CNT):
-        R[i][j] = numpy.dot(P[i, :], Q[:, j])
-
-
-print()
-
-for user in range(Info.USERS_CNT):
-    for item in range(Info.ITEMS_CNT):
-        print(R[user][item], end=" ")
-    print()'''
