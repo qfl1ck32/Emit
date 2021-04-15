@@ -1,4 +1,11 @@
+import dotenv from 'dotenv'
+
 import express from 'express'
+import mysql from 'mysql'
+
+dotenv.config()
+
+const connection = mysql.createConnection(process.env.DATABASE_URL)
 
 const 
     app = express(),
