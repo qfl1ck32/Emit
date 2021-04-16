@@ -26,11 +26,11 @@ const
     app = express(),
     port = 8080
 
-app.post('/getHello', (_, res) => {
-    res.json({
-        'message': 'Hello!'
-    })
-})
+    
+setInterval(() => {
+    connection.query('SELECT 1')
+}, 5000)
+
 
 app.listen(port, () => {
     console.log(`Listening on port ${ port }.`)
