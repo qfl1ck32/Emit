@@ -3,28 +3,95 @@ import React from 'react'
 import {
     StyleSheet,
     View,
-    Text
+    Text,
+    Button,
+    Keyboard
 } from 'react-native'
 
-import StyledInput from './StyledInput'
+import StyledInputWithController from './StyledInputWIthController'
+import PasswordStrengthMeter from './PasswordStrengthMeter'
 
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
 
+import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+
+import axios from 'axios'
+
+import IP from '../assets/serverIP.json'
+
 const LoginScreen = () => {
 
-    const [formData, setFormData] = React.useState({
-        email: '',
-        password: '',
-        secureTextEntry: true
+    const schema = yup.object().shape({
+        username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.').test('is-taken', 'Username is already used.', async (username: any) => {
+            return (await axios.post(`${IP}/checkUsernameTaken`, { username })).data
+        }),
+
+        email: yup.string().required('This field is required.').email('Invalid e-mail.').max(32, 'Should be at most 32 characters long.').test('is-taken', 'Email is already used.', async (email: any) => {
+            return (await axios.post(`${IP}/checkEmailTaken`, { email })).data
+        }),
+
+        password: yup.string().required('This field is required.').min(8, 'Should be at least 8 characters long.'),
+        confirmPassword: yup.string().required('This field is required.').oneOf([yup.ref('password'), null], 'Passwords do not match.')
+    })
+
+    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues } = useForm({
+        resolver: yupResolver(schema),
+        mode: 'all'
+    })
+
+    const onSubmitPress = () => {
+        Keyboard.dismiss()
+        handleSubmit(onSubmit)()
+    }
+
+    const onSubmit = async (values: object) => {
+        const response = await axios.post(`${IP}/signup`, values)
+        const data = response.data
+
+        if (data.error)
+            return setMessage({
+                show: true,
+                message: data.message
+            })
+
+        // add logic for going back to login screen + create login screen
+    }
+
+    const [passwordSettings, setPasswordSettings] = React.useState({
+        secureTextEntry: true,
+        featherName: 'lock'
+    })
+
+    const [message, setMessage] = React.useState({
+        show: false,
+        message: ''
     })
 
     const switchShowingPassword = () => {
-        setFormData({
-        ...formData,
-        secureTextEntry: !formData.secureTextEntry
+        setPasswordSettings({
+            secureTextEntry: !passwordSettings.secureTextEntry,
+            featherName: passwordSettings.featherName == 'lock'? 'unlock' : 'lock'
+        })
+    }
+
+    const [confirmPasswordSettings, setConfirmPasswordSettings] = React.useState({
+        secureTextEntry: true,
+        featherName: 'lock'
     })
-}
+
+    const switchShowingConfirmPassword = () => {
+        setConfirmPasswordSettings({
+            secureTextEntry: !confirmPasswordSettings.secureTextEntry,
+            featherName: confirmPasswordSettings.featherName == 'lock'? 'unlock' : 'lock'
+        })
+    }
+
+    const values = getValues()
+
+    const formProps = { errors, control, dirtyFields, values, touchedFields }
 
     return (
         <View style = { styles.container }>
@@ -34,23 +101,70 @@ const LoginScreen = () => {
             </View>
 
             <View style = { styles.footer }>
-                <StyledInput
-                    text = 'E-mail'
-                    iconName = 'user-o'
-                    textPlaceholder = 'Your e-mail'
-                    featherName = 'check-circle'
-                    featherColor = 'green'  />
+               
+                <StyledInputWithController
+                    title = 'Username'
+                    name = 'username'
+                    placeholder = 'funnyguy23'
 
-                <StyledInput 
-                    secureTextEntry = { formData.secureTextEntry }
-                    marginTop = { true }
-                    text = 'Password'
+                    iconName = 'user-o'
+                    featherName = 'check-circle'
+
+                    { ...formProps }
+                />
+
+
+                <StyledInputWithController
+                    title = 'Email'
+                    name = 'email'
+                    placeholder = 'imsofunny@haha.com'
+
+                    iconName = 'envelope'
+                    featherName = 'check-circle'
+
+                    { ...formProps }
+                />
+
+                <StyledInputWithController
+                    title = 'Password'
+                    name = 'password'
+                    placeholder = '●●●●●●●●'
+
                     iconName = 'lock'
-                    textPlaceholder = 'Your password'
-                    featherName = 'lock'
-                    featherColor = 'grey'
-                    
-                    onPressFeather = { switchShowingPassword }/>
+                    featherName = { passwordSettings.featherName }
+                    secureTextEntry = { passwordSettings.secureTextEntry }
+
+                    onPressFeather = { switchShowingPassword }
+
+                    { ...formProps }
+                />
+
+                <StyledInputWithController
+                    title = 'Confirm password'
+                    name = 'confirmPassword'
+                    placeholder = '●●●●●●●●'
+
+                    iconName = 'lock'
+                    featherName = { confirmPasswordSettings.featherName }
+                    secureTextEntry = { confirmPasswordSettings.secureTextEntry }
+
+                    onPressFeather = { switchShowingConfirmPassword }
+
+                    { ... formProps}
+
+                    marginBottom
+                />
+
+                <Button title = 'Sign up' onPress = { onSubmitPress } />
+
+                { message.show && 
+                    <View>
+                        <Text style = { styles.error }>
+                            { message.message }
+                        </Text>
+                    </View>
+                }
+
             </View>
 
         </View>
@@ -108,6 +222,10 @@ const styles = StyleSheet.create({
     button: {
         alignItems: 'center',
         marginTop: 50
+    },
+
+    error: {
+        color: 'red'
     }
 })
 
