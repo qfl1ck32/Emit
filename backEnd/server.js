@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 
 import express from 'express'
 import mysql from 'mysql'
+import { v4 as uuid } from 'uuid'
 
 dotenv.config()
 
@@ -13,11 +14,7 @@ const sendQuery = async (query, parametersToBind) => {
             if (err)
                 return reject(err)
             
-            const answer = results.map(rowDataPacket => {
-                return Object.assign({}, rowDataPacket)
-            })
-
-            return resolve(answer)
+            return resolve(results)
         })
     })
 }
@@ -31,6 +28,77 @@ setInterval(() => {
     connection.query('SELECT 1')
 }, 5000)
 
+
+app.use(express.json())
+app.use(express.urlencoded({
+    extended: true
+}))
+
+const error = message => {
+    return {
+        error: true,
+        message
+    }
+}
+
+const success = message => {
+    return {
+        error: false,
+        message
+    }
+}
+
+const checkUsernameTaken = async username => {
+    return !(await sendQuery(`
+        SELECT COUNT(ID) AS count
+        FROM users
+        WHERE username = ?;`, [username]))[0].count
+}
+
+const checkEmailTaken = async email => {
+    return !(await sendQuery(`
+        SELECT COUNT(ID) AS count
+        FROM users
+        WHERE email = ?;`, [email]))[0].count
+}
+
+app.post('/signup', async (req, res) => {
+
+    const { username, email, password, confirmPassword } = req.body
+
+    if (!checkUsernameTaken(username))
+        return res.json(error('The username is already taken.'))
+
+    if (!checkEmailTaken(email))
+        return res.json(error('The email is already taken.'))
+
+    if (password != confirmPassword)
+        return res.json(error('The passwords do not match.'))
+
+    const ID = uuid()
+
+    let response
+    
+    try {
+        response = await sendQuery(`
+            INSERT INTO users
+            VALUES (UNHEX(REPLACE(?, '-', '')), ?, ?, ?);`, [ID, username, email, password])
+    }
+
+    catch (err) {
+        return res.json(error('Something unexpected happened. Please try again.'))
+    }
+
+    return res.json(success())
+})
+
+app.post('/checkUsernameTaken', async (req, res) => {
+    res.json(await checkUsernameTaken(req.body.username))
+})
+
+app.post('/checkEmailTaken', async (req, res) => {
+    res.json(await checkEmailTaken(req.body.email))
+})
 
 app.listen(port, () => {
     console.log(`Listening on port ${ port }.`)
