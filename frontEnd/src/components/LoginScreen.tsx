@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 
 import StyledInputWithController from './StyledInputWIthController'
+
 import PasswordStrengthMeter from './PasswordStrengthMeter'
 
 import * as Animatable from 'react-native-animatable'
@@ -33,11 +34,13 @@ const LoginScreen = () => {
         confirmPassword: yup.string().required('This field is required.').oneOf([yup.ref('password'), null], 'Passwords do not match.')
     })
 
-    const APIValidation = yup.object().shape({
+    const usernameAPIValidation = yup.object().shape({
         username: yup.string().test('is-taken', 'Username is already used.', async (username: any) => {
             return (await axios.post(`${IP}/checkUsernameTaken`, { username })).data
-        }),
+        })
+    })
 
+    const emailAPIValidation = yup.object().shape({
         email: yup.string().test('is-taken', 'Email is already used.', async (email: any) => {
             return (await axios.post(`${IP}/checkEmailTaken`, { email })).data
         })
@@ -45,17 +48,19 @@ const LoginScreen = () => {
 
 
     const checkAvailableUsername = async () => {
-        return await validate('username')
+        if (!errors['username'])
+            return await validate('username')
     }
 
     const checkAvailableEmail = async () => {
-        return await validate('email')
+        if (!errors['email'])
+            return await validate('email')
     }
 
 
     const validate = async (field: string) => {
         try {
-            await APIValidation.validate({
+            await (field == 'username' ? usernameAPIValidation : emailAPIValidation).validate({
                 [field]: watch(field)
             })
         }
@@ -87,7 +92,7 @@ const LoginScreen = () => {
         const checkUsername = await validate('username')
         const checkEmail = await validate('email')
 
-        if (!(await validate('username') && await validate('email')))
+        if (!(checkUsername && checkEmail))
             return
 
         const response = await axios.post(`${IP}/signup`, values)
