@@ -21,8 +21,10 @@ interface StyledInputWithControllerProps extends InputProps {
     iconName: any,
     placeholder: string,
 
-    featherName: any,
+    featherName?: any,
     onPressFeather?: any,
+
+    doNotChangeFeatherColor?: boolean,
 
     marginBottom?: boolean,
 
@@ -77,12 +79,14 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
                         }
                     />
                     
-                    <Feather
-                        onPress = { this.props.onPressFeather }
-                        name = { this.props.featherName }
-                        color = { this.props.errors[this.props.name] || this.props.dirtyFields[this.props.name] ? (this.props.errors[this.props.name] ? 'red' : 'green') : 'gray' }
-                        size = { 20 }
-                    />
+                    { this.props.featherName && 
+                        <Feather
+                            onPress = { this.props.onPressFeather }
+                            name = { this.props.featherName }
+                            color = { !this.props.doNotChangeFeatherColor && (this.props.errors[this.props.name] || this.props.dirtyFields[this.props.name]) ? (this.props.errors[this.props.name] ? 'red' : 'green') : 'gray' }
+                            size = { 20 }
+                        />
+                    }
 
                     
                 </View>
