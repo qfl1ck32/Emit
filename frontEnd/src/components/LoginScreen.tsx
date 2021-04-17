@@ -10,12 +10,8 @@ import {
 
 import StyledInputWithController from './StyledInputWIthController'
 
-import PasswordStrengthMeter from './PasswordStrengthMeter'
-
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
-
-import { useDebouncedCallback } from 'use-debounce'
 
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -25,18 +21,36 @@ import axios from 'axios'
 
 import IP from '../assets/serverIP.json'
 
-const LoginScreen = ( { navigation:  { navigate } } ) => {
+import { RootStackParamList } from './RootStackScreen'
+import { RouteProp } from '@react-navigation/native'
+
+import { StackNavigationProp } from '@react-navigation/stack'
+
+type RouteProps = RouteProp <RootStackParamList, 'LoginScreen'>
+type NavigationProps = StackNavigationProp <RootStackParamList, 'LoginScreen'>
+
+type Props = {
+    route: RouteProps,
+    navigation: NavigationProps
+}
+
+const LoginScreen = ( { route, navigation  } : Props ) => {
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.'),
         password: yup.string().required('This field is required.')
     })
 
-    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues } = useForm({
+    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues, setValue } = useForm({
         resolver: yupResolver(schema),
         mode: 'onSubmit'
     })
     
+
+    React.useEffect(() => {
+        setValue('username', route?.params?.username)
+        setValue('password', route?.params?.password)
+    }, [route?.params])
 
     const onSubmitPress = () => {
         Keyboard.dismiss()
@@ -54,7 +68,7 @@ const LoginScreen = ( { navigation:  { navigate } } ) => {
                 message: data.message
             })
 
-        // add logic for going back to login screen + create login screen
+        // add logic for signing in
     }
 
     const [passwordSettings, setPasswordSettings] = React.useState({
@@ -120,7 +134,7 @@ const LoginScreen = ( { navigation:  { navigate } } ) => {
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigate('SignUpScreen') }>
+                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigation.navigate('SignUpScreen') }>
                         <Text style = { [styles.textSign, { color: 'green' }] }>Sign up</Text>
                     </TouchableOpacity>
                 </View>
