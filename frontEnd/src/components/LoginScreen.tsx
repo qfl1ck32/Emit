@@ -21,21 +21,9 @@ import axios from 'axios'
 
 import IP from '../assets/serverIP.json'
 
-import { RootStackParamList } from './RootStackScreen'
-import { RouteProp } from '@react-navigation/native'
+import { NavigationProps } from './RootStackScreen'
 
-import { StackNavigationProp } from '@react-navigation/stack'
-
-type RouteProps = RouteProp <RootStackParamList, 'LoginScreen'>
-type NavigationProps = StackNavigationProp <RootStackParamList, 'LoginScreen'>
-
-type Props = {
-    route: RouteProps,
-    navigation: NavigationProps
-}
-
-const LoginScreen = ( { route, navigation  } : Props ) => {
-
+const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) => {
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.'),
         password: yup.string().required('This field is required.')
@@ -127,6 +115,14 @@ const LoginScreen = ( { route, navigation  } : Props ) => {
                     { ...formProps }
                 />
 
+                { message.show && 
+                    <View style = { styles.message }>
+                        <Text style = { styles.error }>
+                            { message.message }
+                        </Text>
+                    </View>
+                }
+
                 <View style = { styles.button }>
                     <TouchableOpacity style = { styles.signIn } onPress = { onSubmitPress }>
                         <LinearGradient style = { styles.signIn } colors = { ['#3187be', '#0d5d90'] }>
@@ -138,14 +134,6 @@ const LoginScreen = ( { route, navigation  } : Props ) => {
                         <Text style = { [styles.textSign, { color: 'green' }] }>Sign up</Text>
                     </TouchableOpacity>
                 </View>
-
-                { message.show && 
-                    <View style = { styles.message }>
-                        <Text style = { styles.error }>
-                            { message.message }
-                        </Text>
-                    </View>
-                }
 
             </View>
 
@@ -204,7 +192,7 @@ const styles = StyleSheet.create({
 
     button: {
         alignItems: 'center',
-        marginTop: 50
+        marginTop: 15
     },
 
     error: {
@@ -215,8 +203,8 @@ const styles = StyleSheet.create({
 
     message: {
         textAlign: 'center',
-        flex: 1,
-        marginTop: 5
+        flex: 0,
+        marginTop: 15
     },
 
     border: {
