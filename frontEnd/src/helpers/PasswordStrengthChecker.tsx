@@ -9,35 +9,13 @@ export default class PasswordStrengthChecker {
     private oneSpecialCharacter: RegExp
     private atLeast8Characters: RegExp
 
-    private check = (regexp: RegExp, text: string): number => {
-        return regexp.test(text) ? 1 : 0
+    public static getInstance(): PasswordStrengthChecker {
+        if (!PasswordStrengthChecker.instance)
+            PasswordStrengthChecker.instance = new PasswordStrengthChecker()
+
+        return PasswordStrengthChecker.instance;
     }
 
-    private checkAll = (text: string): number => {
-        return [this.oneLowerCase,
-                this.oneUpperCase,
-                this.oneNumber,
-                this.oneSpecialCharacter,
-                this.atLeast8Characters].reduce((acc: number, curr: RegExp) => {
-                    return acc + 0.2 * this.check(curr, text)
-                }, 0)
-    }
-
-    public getStrength(password: string): object {
-        const progress = this.checkAll(password)
-
-        for (let index in this.progressToColorAndMessage) {
-            const currentProgress: number = parseInt(index) / 100
-
-            if (currentProgress >= progress)
-                return {
-                    ...this.progressToColorAndMessage[index],
-                    progress: currentProgress
-                }
-        }
-
-        return []
-    }
 
     private constructor() {
         this.progressToColorAndMessage = {}
@@ -81,14 +59,29 @@ export default class PasswordStrengthChecker {
         }
     }
 
-    
-
-    public static getInstance(): PasswordStrengthChecker {
-        if (!PasswordStrengthChecker.instance)
-            PasswordStrengthChecker.instance = new PasswordStrengthChecker()
-
-        return PasswordStrengthChecker.instance;
+    private checkAll = (text: string): number => {
+        return [this.oneLowerCase,
+                this.oneUpperCase,
+                this.oneNumber,
+                this.oneSpecialCharacter,
+                this.atLeast8Characters].reduce((acc: number, curr: RegExp) => {
+                    return acc + 0.2 * (curr.test(text) ? 1 : 0)
+                }, 0)
     }
 
+    public getStrength(password: string): object {
+        const progress = this.checkAll(password)
 
+        for (let index in this.progressToColorAndMessage) {
+            const currentProgress: number = parseInt(index) / 100
+
+            if (currentProgress >= progress)
+                return {
+                    ...this.progressToColorAndMessage[index],
+                    progress: currentProgress
+                }
+        }
+
+        return {}
+    }
 }
