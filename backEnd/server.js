@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import mysql from 'mysql'
 import { v4 as uuid } from 'uuid'
+import bcrypt from 'bcrypt'
 
 dotenv.config()
 
@@ -13,7 +14,7 @@ const sendQuery = async (query, parametersToBind) => {
         connection.query(query, parametersToBind, (err, results, fields) => {
             if (err)
                 return reject(err)
-            
+
             return resolve(results)
         })
     })
@@ -75,14 +76,13 @@ app.post('/signup', async (req, res) => {
     if (password != confirmPassword)
         return res.json(error('The passwords do not match.'))
 
-    const ID = uuid()
 
-    let response
-    
+    const hashedPassword = await bcrypt.hash(password)
+
     try {
-        response = await sendQuery(`
+        await sendQuery(`
             INSERT INTO users
-            VALUES (UNHEX(REPLACE(?, '-', '')), ?, ?, ?);`, [ID, username, email, password])
+            VALUES (UNHEX(REPLACE(?, '-', '')), ?, ?, ?);`, [uuid(), username, email, hashedPassword])
     }
 
     catch (err) {
