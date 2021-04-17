@@ -26,6 +26,8 @@ interface StyledInputWithControllerProps extends InputProps {
 
     doNotChangeFeatherColor?: boolean,
 
+    onChangeCallback?: any,
+
     marginBottom?: boolean,
 
     values: any
@@ -67,15 +69,24 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
                         control = { this.props.control }
                         name = { this.props.name }
                         render = {
-                            ({ field: { onChange, onBlur, value }}) => 
-                                <Input
-                                    placeholder = { this.props.placeholder }
-                                    onChangeText = { onChange }
-                                    onBlur = { onBlur }
-                                    value = { value }
-                                    secureTextEntry = { this.props.secureTextEntry }
-                                    onKeyPress = { this.props.onKeyPress }
-                                />
+                            ({ field: { onChange, onBlur, value }}) => {
+
+                                const onChangeWrapper = (e: Event) => {
+                                    this.props.onChangeCallback?.()
+                                    onChange(e)
+                                }
+
+                                return (
+                                    <Input
+                                        placeholder = { this.props.placeholder }
+                                        onChangeText = { onChangeWrapper }
+                                        onBlur = { onBlur }
+                                        value = { value }
+                                        secureTextEntry = { this.props.secureTextEntry }
+                                        onKeyPress = { this.props.onKeyPress }
+                                    />
+                                )
+                            }
                         }
                     />
                     
