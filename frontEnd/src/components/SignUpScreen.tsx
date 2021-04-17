@@ -12,7 +12,6 @@ import StyledInputWithController from './StyledInputWIthController'
 
 import PasswordStrengthMeter from './PasswordStrengthMeter'
 
-import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
 
 import { useDebouncedCallback } from 'use-debounce'
