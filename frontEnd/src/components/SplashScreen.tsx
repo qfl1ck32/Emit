@@ -10,9 +10,9 @@ import {
 
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Animatable from 'react-native-animatable'
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
+import { MaterialIcons } from '@expo/vector-icons'
 
-const SplashScreen = ( { navigation:  { navigate } }) => {
+const SplashScreen = ( { navigation:  { navigate } } ) => {
     return (
         <View style = { styles.container }>
             <View style = { styles.header }>

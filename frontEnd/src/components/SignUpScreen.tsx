@@ -25,16 +25,61 @@ import axios from 'axios'
 
 import IP from '../assets/serverIP.json'
 
-const LoginScreen = ( { navigation:  { navigate } } ) => {
+const SignUpScreen = ( { navigation:  { navigate } } ) => {
 
     const schema = yup.object().shape({
-        username: yup.string().required('This field is required.'),
-        password: yup.string().required('This field is required.')
+        username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
+        email: yup.string().required('This field is required.').email('Invalid e-mail.').max(32, 'Should be at most 32 characters long.'),
+
+        password: yup.string().required('This field is required.').min(8, 'Should be at least 8 characters long.'),
+        confirmPassword: yup.string().required('This field is required.').oneOf([yup.ref('password'), null], 'Passwords do not match.')
     })
 
-    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues } = useForm({
+    const usernameAPIValidation = yup.object().shape({
+        username: yup.string().test('is-taken', 'Username is already used.', async (username: any) => {
+            return (await axios.post(`${IP}/checkUsernameTaken`, { username })).data
+        })
+    })
+
+    const emailAPIValidation = yup.object().shape({
+        email: yup.string().test('is-taken', 'Email is already used.', async (email: any) => {
+            return (await axios.post(`${IP}/checkEmailTaken`, { email })).data
+        })
+    })
+
+
+    const checkAvailableUsername = async () => {
+        if (!errors['username'])
+            return await validate('username')
+    }
+
+    const checkAvailableEmail = async () => {
+        if (!errors['email'])
+            return await validate('email')
+    }
+
+
+    const validate = async (field: string) => {
+        try {
+            await (field == 'username' ? usernameAPIValidation : emailAPIValidation).validate({
+                [field]: watch(field)
+            })
+        }
+
+        catch(err) {
+            setError(field, {
+                message: err.message
+            })
+
+            return false
+        }
+
+        return true
+    }
+
+    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues, setError, watch } = useForm({
         resolver: yupResolver(schema),
-        mode: 'onSubmit'
+        mode: 'all'
     })
     
 
@@ -45,7 +90,13 @@ const LoginScreen = ( { navigation:  { navigate } } ) => {
 
     const onSubmit = async (values: object) => {
 
-        const response = await axios.post(`${IP}/signin`, values)
+        const checkUsername = await validate('username')
+        const checkEmail = await validate('email')
+
+        if (!(checkUsername && checkEmail))
+            return
+
+        const response = await axios.post(`${IP}/signup`, values)
         const data = response.data
 
         if (data.error)
@@ -62,10 +113,24 @@ const LoginScreen = ( { navigation:  { navigate } } ) => {
         featherName: 'eye-off'
     })
 
+    const [confirmPasswordSettings, setConfirmPasswordSettings] = React.useState({
+        secureTextEntry: true,
+        featherName: 'eye-off'
+    })
+
+
     const switchShowingPassword = () => {
         setPasswordSettings({
             secureTextEntry: !passwordSettings.secureTextEntry,
             featherName: passwordSettings.featherName == 'eye'? 'eye-off' : 'eye'
+        })
+    }
+
+
+    const switchShowingConfirmPassword = () => {
+        setConfirmPasswordSettings({
+            secureTextEntry: !confirmPasswordSettings.secureTextEntry,
+            featherName: confirmPasswordSettings.featherName == 'eye'? 'eye-off' : 'eye'
         })
     }
 
@@ -93,6 +158,23 @@ const LoginScreen = ( { navigation:  { navigate } } ) => {
                     placeholder = 'funnyguy23'
 
                     iconName = 'user-o'
+                    featherName = 'check-circle'
+
+                    onKeyPress = { useDebouncedCallback(checkAvailableUsername, 500) }
+
+                    { ...formProps }
+                />
+
+
+                <StyledInputWithController
+                    title = 'Email'
+                    name = 'email'
+                    placeholder = 'imsofunny@haha.com'
+
+                    iconName = 'envelope'
+                    featherName = 'check-circle'
+
+                    onKeyPress = { useDebouncedCallback(checkAvailableEmail, 500) }
 
                     { ...formProps }
                 />
@@ -108,20 +190,36 @@ const LoginScreen = ( { navigation:  { navigate } } ) => {
 
                     onPressFeather = { switchShowingPassword }
 
-                    doNotChangeFeatherColor
-
                     { ...formProps }
                 />
+
+                <StyledInputWithController
+                    title = 'Confirm password'
+                    name = 'confirmPassword'
+                    placeholder = '●●●●●●●●'
+
+                    iconName = 'lock'
+                    featherName = { confirmPasswordSettings.featherName }
+                    secureTextEntry = { confirmPasswordSettings.secureTextEntry }
+
+                    onPressFeather = { switchShowingConfirmPassword }
+
+                    { ... formProps}
+
+                    marginBottom
+                />
+
+                <PasswordStrengthMeter password = { watch('password') || watch('confirmPassword') } />
 
                 <View style = { styles.button }>
                     <TouchableOpacity style = { styles.signIn } onPress = { onSubmitPress }>
                         <LinearGradient style = { styles.signIn } colors = { ['#3187be', '#0d5d90'] }>
-                            <Text style = { styles.textSign }>Sign in</Text>
+                            <Text style = { styles.textSign }>Sign up</Text>
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigate('SignUpScreen') }>
-                        <Text style = { [styles.textSign, { color: 'green' }] }>Sign up</Text>
+                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigate('LoginScreen') }>
+                        <Text style = { [styles.textSign, { color: 'green' }] }>Log in</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -213,4 +311,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default LoginScreen
+export default SignUpScreen
