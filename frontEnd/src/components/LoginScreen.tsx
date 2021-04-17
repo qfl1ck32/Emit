@@ -27,7 +27,6 @@ const LoginScreen = () => {
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
-
         email: yup.string().required('This field is required.').email('Invalid e-mail.').max(32, 'Should be at most 32 characters long.'),
 
         password: yup.string().required('This field is required.').min(8, 'Should be at least 8 characters long.'),
@@ -44,10 +43,20 @@ const LoginScreen = () => {
         })
     })
 
+
+    const checkAvailableUsername = async () => {
+        return await validate('username')
+    }
+
+    const checkAvailableEmail = async () => {
+        return await validate('email')
+    }
+
+
     const validate = async (field: string) => {
         try {
             await APIValidation.validate({
-                [field]: values[field]
+                [field]: watch(field)
             })
         }
 
@@ -62,10 +71,11 @@ const LoginScreen = () => {
         return true
     }
 
-    const { control, handleSubmit, formState: { errors, dirtyFields }, getValues, setError } = useForm({
+    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues, setError, watch } = useForm({
         resolver: yupResolver(schema),
         mode: 'all'
     })
+    
 
     const onSubmitPress = () => {
         Keyboard.dismiss()
@@ -74,7 +84,10 @@ const LoginScreen = () => {
 
     const onSubmit = async (values: object) => {
 
-        if (!(validate('username') && validate('email')))
+        const checkUsername = await validate('username')
+        const checkEmail = await validate('email')
+
+        if (!(await validate('username') && await validate('email')))
             return
 
         const response = await axios.post(`${IP}/signup`, values)
@@ -120,7 +133,7 @@ const LoginScreen = () => {
 
     const values = getValues()
 
-    const formProps = { errors, control, dirtyFields }
+    const formProps = { errors, control, dirtyFields, values, touchedFields }
 
     return (
         <View style = { styles.container }>
@@ -130,7 +143,7 @@ const LoginScreen = () => {
             </View>
 
             <View style = { styles.footer }>
-               
+
                 <StyledInputWithController
                     title = 'Username'
                     name = 'username'
@@ -138,6 +151,8 @@ const LoginScreen = () => {
 
                     iconName = 'user-o'
                     featherName = 'check-circle'
+
+                    onKeyPress = { checkAvailableUsername }
 
                     { ...formProps }
                 />
@@ -150,6 +165,8 @@ const LoginScreen = () => {
 
                     iconName = 'envelope'
                     featherName = 'check-circle'
+
+                    onKeyPress = { checkAvailableEmail }
 
                     { ...formProps }
                 />
@@ -183,6 +200,7 @@ const LoginScreen = () => {
 
                     marginBottom
                 />
+
 
                 <Button title = 'Sign up' onPress = { onSubmitPress } />
 
