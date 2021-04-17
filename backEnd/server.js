@@ -77,7 +77,7 @@ app.post('/signup', async (req, res) => {
         return res.json(error('The passwords do not match.'))
 
 
-    const hashedPassword = await bcrypt.hash(password)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     try {
         await sendQuery(`
