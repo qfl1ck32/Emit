@@ -192,6 +192,8 @@ const LoginScreen = () => {
                     { ...formProps }
                 />
 
+                <PasswordStrengthMeter password = { watch('password') } />
+
                 <StyledInputWithController
                     title = 'Confirm password'
                     name = 'confirmPassword'
