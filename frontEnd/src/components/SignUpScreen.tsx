@@ -25,7 +25,9 @@ import axios from 'axios'
 
 import IP from '../assets/serverIP.json'
 
-const SignUpScreen = ( { navigation:  { navigate } } ) => {
+import { StackProps } from './RootStackScreen'
+
+const SignUpScreen = ( { navigation }: StackProps ) => {
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
@@ -105,7 +107,10 @@ const SignUpScreen = ( { navigation:  { navigate } } ) => {
                 message: data.message
             })
 
-        // add logic for going back to login screen + create login screen
+        return navigation.navigate('LoginScreen', {
+            username: values['username'],
+            password: values['password']
+        })
     }
 
     const [passwordSettings, setPasswordSettings] = React.useState({
@@ -218,7 +223,7 @@ const SignUpScreen = ( { navigation:  { navigate } } ) => {
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigate('LoginScreen') }>
+                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigation.navigate('LoginScreen') }>
                         <Text style = { [styles.textSign, { color: 'green' }] }>Log in</Text>
                     </TouchableOpacity>
                 </View>
@@ -253,7 +258,7 @@ const styles = StyleSheet.create({
     },
 
     footer: {
-        flex: 3,
+        flex: 5 ,
         backgroundColor: '#FFF',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
