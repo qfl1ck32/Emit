@@ -12,11 +12,12 @@ export interface InputProps {
 
     onChangeText?: any,
     onBlur?: any,
+    onKeyPress?: any,
 
     value?: any,
 }
 
-const StyledInput: React.FC <InputProps> = ( { onBlur, value, onChangeText, secureTextEntry, placeholder } ) => (
+const StyledInput: React.FC <InputProps> = ( { onBlur, value, onChangeText, secureTextEntry, placeholder, onKeyPress } ) => (
     <TextInput
         onBlur = { onBlur }
         value = { value }
@@ -25,6 +26,7 @@ const StyledInput: React.FC <InputProps> = ( { onBlur, value, onChangeText, secu
         placeholder = { placeholder }
         style = { styles.textInput }
         autoCapitalize = 'none'
+        onKeyPress = { onKeyPress }
     />
 )
 
