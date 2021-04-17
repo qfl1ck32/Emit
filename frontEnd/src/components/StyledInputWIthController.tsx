@@ -46,6 +46,7 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
 
         return  this.props.values[name] != prevProps.values[name] ||
                 this.props.errors[name] != prevState.errors[name] ||
+                this.props.errors[name] != prevProps.errors[name] ||
                 this.props.touchedFields[name] != prevProps.touchedFields[name] ||
                 this.props.dirtyFields[name] != prevProps.dirtyFields[name] ||
                 this.props.secureTextEntry != prevProps.secureTextEntry
