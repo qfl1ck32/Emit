@@ -5,7 +5,8 @@ import {
     View,
     Text,
     Button,
-    Keyboard
+    Keyboard,
+    TextInput
 } from 'react-native'
 
 import StyledInputWithController from './StyledInputWIthController'
@@ -14,7 +15,7 @@ import PasswordStrengthMeter from './PasswordStrengthMeter'
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
 
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
@@ -25,19 +26,43 @@ import IP from '../assets/serverIP.json'
 const LoginScreen = () => {
 
     const schema = yup.object().shape({
-        username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.').test('is-taken', 'Username is already used.', async (username: any) => {
-            return (await axios.post(`${IP}/checkUsernameTaken`, { username })).data
-        }),
+        username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
 
-        email: yup.string().required('This field is required.').email('Invalid e-mail.').max(32, 'Should be at most 32 characters long.').test('is-taken', 'Email is already used.', async (email: any) => {
-            return (await axios.post(`${IP}/checkEmailTaken`, { email })).data
-        }),
+        email: yup.string().required('This field is required.').email('Invalid e-mail.').max(32, 'Should be at most 32 characters long.'),
 
         password: yup.string().required('This field is required.').min(8, 'Should be at least 8 characters long.'),
         confirmPassword: yup.string().required('This field is required.').oneOf([yup.ref('password'), null], 'Passwords do not match.')
     })
 
-    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues } = useForm({
+    const APIValidation = yup.object().shape({
+        username: yup.string().test('is-taken', 'Username is already used.', async (username: any) => {
+            return (await axios.post(`${IP}/checkUsernameTaken`, { username })).data
+        }),
+
+        email: yup.string().test('is-taken', 'Email is already used.', async (email: any) => {
+            return (await axios.post(`${IP}/checkEmailTaken`, { email })).data
+        })
+    })
+
+    const validate = async (field: string) => {
+        try {
+            await APIValidation.validate({
+                [field]: values[field]
+            })
+        }
+
+        catch(err) {
+            setError(field, {
+                message: err.message
+            })
+
+            return false
+        }
+
+        return true
+    }
+
+    const { control, handleSubmit, formState: { errors, dirtyFields }, getValues, setError } = useForm({
         resolver: yupResolver(schema),
         mode: 'all'
     })
@@ -48,6 +73,10 @@ const LoginScreen = () => {
     }
 
     const onSubmit = async (values: object) => {
+
+        if (!(validate('username') && validate('email')))
+            return
+
         const response = await axios.post(`${IP}/signup`, values)
         const data = response.data
 
@@ -91,7 +120,7 @@ const LoginScreen = () => {
 
     const values = getValues()
 
-    const formProps = { errors, control, dirtyFields, values, touchedFields }
+    const formProps = { errors, control, dirtyFields }
 
     return (
         <View style = { styles.container }>
