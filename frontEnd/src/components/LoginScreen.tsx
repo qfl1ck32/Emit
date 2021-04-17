@@ -33,7 +33,6 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
         resolver: yupResolver(schema),
         mode: 'onSubmit'
     })
-    
 
     React.useEffect(() => {
         setValue('username', route?.params?.username)
@@ -46,6 +45,8 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
     }
 
     const onSubmit = async (values: object) => {
+
+        setMessage({ show: false, message: ''})
 
         const response = await axios.post(`${IP}/signin`, values)
         const data = response.data
@@ -76,9 +77,14 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
         message: ''
     })
 
+    const hideMessage = () => {
+        if (message.show)
+            return setMessage({ show: false, message: '' })
+    }
+
     const values = getValues()
 
-    const formProps = { errors, control, dirtyFields, values, touchedFields }
+    const formProps = { errors, control, dirtyFields, values, touchedFields, onChangeCallback: hideMessage }
 
     return (
         <View style = { styles.container }>
@@ -115,14 +121,6 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
                     { ...formProps }
                 />
 
-                { message.show && 
-                    <View style = { styles.message }>
-                        <Text style = { styles.error }>
-                            { message.message }
-                        </Text>
-                    </View>
-                }
-
                 <View style = { styles.button }>
                     <TouchableOpacity style = { styles.signIn } onPress = { onSubmitPress }>
                         <LinearGradient style = { styles.signIn } colors = { ['#3187be', '#0d5d90'] }>
@@ -134,6 +132,14 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
                         <Text style = { [styles.textSign, { color: 'green' }] }>Sign up</Text>
                     </TouchableOpacity>
                 </View>
+
+                { message.show && 
+                    <Animatable.View animation = 'shake' style = { styles.message }>
+                        <Text style = { styles.error }>
+                            { message.message }
+                        </Text>
+                    </Animatable.View>
+                }
 
             </View>
 
