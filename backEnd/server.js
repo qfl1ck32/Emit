@@ -92,6 +92,28 @@ app.post('/signup', async (req, res) => {
     return res.json(success())
 })
 
+app.post('/signin', async (req, res) => {
+    const { username, password } = req.body
+
+    const response = await sendQuery(`
+        SELECT password
+        FROM users
+        WHERE username = ?;
+    `, [username])
+
+    if (!response.length)
+        return res.json(error('Username not existent.'))
+
+    const hashedPassword = response[0].password
+
+    const checkEqualPasswords = await bcrypt.compare(password, hashedPassword)
+
+    if (!checkEqualPasswords)
+        return res.json(error('Wrong password.'))
+
+    return res.json(success())
+})
+
 app.post('/checkUsernameTaken', async (req, res) => {
     res.json(await checkUsernameTaken(req.body.username))
 })
