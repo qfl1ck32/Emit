@@ -16,6 +16,8 @@ import PasswordStrengthMeter from './PasswordStrengthMeter'
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
 
+import { useDebouncedCallback } from 'use-debounce'
+
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -157,7 +159,7 @@ const LoginScreen = () => {
                     iconName = 'user-o'
                     featherName = 'check-circle'
 
-                    onKeyPress = { checkAvailableUsername }
+                    onKeyPress = { useDebouncedCallback(checkAvailableUsername, 500) }
 
                     { ...formProps }
                 />
@@ -171,7 +173,7 @@ const LoginScreen = () => {
                     iconName = 'envelope'
                     featherName = 'check-circle'
 
-                    onKeyPress = { checkAvailableEmail }
+                    onKeyPress = { useDebouncedCallback(checkAvailableEmail, 500) }
 
                     { ...formProps }
                 />
@@ -206,11 +208,10 @@ const LoginScreen = () => {
                     marginBottom
                 />
 
-
                 <Button title = 'Sign up' onPress = { onSubmitPress } />
 
                 { message.show && 
-                    <View>
+                    <View style = { styles.message }>
                         <Text style = { styles.error }>
                             { message.message }
                         </Text>
@@ -277,7 +278,15 @@ const styles = StyleSheet.create({
     },
 
     error: {
-        color: 'red'
+        color: 'red',
+        textAlign: 'center',
+        fontWeight: 'bold'
+    },
+
+    message: {
+        textAlign: 'center',
+        flex: 1,
+        marginTop: 5
     }
 })
 
