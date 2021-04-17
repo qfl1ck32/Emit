@@ -19,7 +19,7 @@ import * as yup from 'yup'
 
 import axios from 'axios'
 
-import IP from '../assets/serverIP.json'
+import IP from '../assets/authServerIP.json'
 
 import { NavigationProps } from './RootStackScreen'
 
@@ -56,6 +56,8 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
                 show: true,
                 message: data.message
             })
+
+        console.log(data)
 
         // add logic for signing in
     }
