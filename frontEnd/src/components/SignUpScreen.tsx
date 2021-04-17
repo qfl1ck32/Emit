@@ -25,9 +25,9 @@ import axios from 'axios'
 
 import IP from '../assets/serverIP.json'
 
-import { StackProps } from './RootStackScreen'
+import { NavigationProps } from './RootStackScreen'
 
-const SignUpScreen = ( { navigation }: StackProps ) => {
+const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
