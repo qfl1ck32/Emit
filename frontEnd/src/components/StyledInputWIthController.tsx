@@ -104,7 +104,7 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
 
                 { this.props.errors[this.props.name] && 
                     
-                    <Animatable.View animation = 'fadeIn' duration = { 500 }>
+                    <Animatable.View animation = 'fadeInLeft' duration = { 500 }>
                         <Text style = { styles.error }>
                             { this.props.errors[this.props.name].message }
                         </Text>
