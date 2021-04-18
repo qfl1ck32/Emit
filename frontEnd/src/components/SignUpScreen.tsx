@@ -141,11 +141,6 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
         })
     }
 
-    const [message, setMessage] = React.useState({
-        show: false,
-        message: ''
-    })
-
     const values = getValues()
 
     const formProps = { errors, control, dirtyFields, values, touchedFields }
