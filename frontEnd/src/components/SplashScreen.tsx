@@ -40,6 +40,17 @@ const SplashScreen = ( { navigation:  { navigate } } ) => {
                         </LinearGradient>
                     </TouchableOpacity>
                 </View>
+
+                <View style = { styles.button }>
+                    <TouchableOpacity onPress = { () => navigate('SignUpScreen') }>
+                        <LinearGradient colors = { ['#3187be', '#0d5d90'] }  style = { styles.signIn }>
+                            <Text style = { styles.text }>
+                                Sign up
+                            </Text>
+                            <MaterialIcons name = 'navigate-next' color = '#FFF' size = { 20 }/>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
             </Animatable.View>
         </View>
     )
@@ -95,7 +106,7 @@ const styles = StyleSheet.create({
       },
 
       largerText: {
-          fontSize: 16
+          fontSize: 24
       }
 })
 
