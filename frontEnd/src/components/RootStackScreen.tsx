@@ -21,17 +21,14 @@ export type NavigationProps <T> = StackScreenProps <RootStackParamList, T>
 
 const RootStack = createStackNavigator <RootStackParamList> ()
 
-const RootStackScreen = () => {
+const RootStackScreen: React.FC <{}> = () => (
+    <RootStack.Navigator headerMode = 'none'>
+        <RootStack.Screen name = 'SplashScreen' component = { SplashScreen } />
 
-    return (
-        <RootStack.Navigator headerMode = 'none'>
-            <RootStack.Screen name = 'SplashScreen' component = { SplashScreen } />
+        <RootStack.Screen  name = 'LoginScreen' component = { LoginScreen } />
 
-            <RootStack.Screen name = 'LoginScreen' component = { LoginScreen } />
-
-            <RootStack.Screen name = 'SignUpScreen' component = { SignUpScreen } />
-        </RootStack.Navigator>
-    )
-}
+        <RootStack.Screen name = 'SignUpScreen' component = { SignUpScreen } />
+    </RootStack.Navigator>
+)
 
 export default RootStackScreen
