@@ -7,8 +7,10 @@ type SignType = {
 
 type ContextType = {
     signIn: (username: string, password: string) => Promise <SignType>,
-    signOut: () => void,
-    signUp: (username: string, email: string, password: string) => Promise <SignType>
+    signOut: () => Promise <void>,
+    signUp: (username: string, email: string, password: string) => Promise <SignType>,
+
+    sendGetRequest: (data: any) => Promise <any>
 }
 
 export const AuthContext = React.createContext <ContextType> ({} as ContextType)

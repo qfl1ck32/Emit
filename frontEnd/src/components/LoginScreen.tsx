@@ -20,11 +20,9 @@ import * as yup from 'yup'
 
 import { NavigationProps } from './RootStackScreen'
 
-import { AuthContext } from './AuthContext'
+import signIn from './Root/signIn'
 
 const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) => {
-
-    const { signIn }  = React.useContext(AuthContext)
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.'),
