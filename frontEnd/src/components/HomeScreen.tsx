@@ -2,15 +2,21 @@ import React from 'react'
 
 import { View, Button, StyleSheet } from 'react-native'
 
-import { AuthContext } from './AuthContext'
+import signOut from './Root/signOut'
+import sendGetRequest from './Root/sendGetRequest'
 
 const HomeScreen = () => {
 
-    const { signOut } = React.useContext(AuthContext)
+    const test = async () => {
+        const resp = await sendGetRequest({})
+
+        console.log(resp)
+    }
 
     return (
         <View style = { styles.container }>
             <Button title = 'Sign out' onPress = { signOut } />
+            <Button title = 'Test restricted API' onPress = { test } />
         </View>
     )
 }
