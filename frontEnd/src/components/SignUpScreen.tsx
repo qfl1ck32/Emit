@@ -20,13 +20,17 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import axios from 'axios'
+import { NavigationProps } from './RootStackScreen'
+
+import { AuthContext } from './AuthContext'
 
 import IP from '../assets/authServerIP.json'
 
-import { NavigationProps } from './RootStackScreen'
+import axios from 'axios'
 
 const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
+
+    const { signUp } = React.useContext(AuthContext)
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
@@ -97,13 +101,13 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
         if (!(checkUsername && checkEmail))
             return
 
-        const response = await axios.post(`${IP}/signup`, values)
-        const data = response.data
 
-        if (data.error)
+        const trySignUp = await signUp(values['username'], values['email'], values['password'])
+
+        if (trySignUp && trySignUp.error)
             return setMessage({
                 show: true,
-                message: data.message
+                message: trySignUp.message
             })
 
         return navigation.navigate('LoginScreen', {

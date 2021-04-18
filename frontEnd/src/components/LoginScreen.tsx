@@ -5,7 +5,7 @@ import {
     View,
     TouchableOpacity,
     Text,
-    Keyboard,
+    Keyboard
 } from 'react-native'
 
 import StyledInputWithController from './StyledInputWIthController'
@@ -17,13 +17,14 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import axios from 'axios'
-
-import IP from '../assets/authServerIP.json'
-
 import { NavigationProps } from './RootStackScreen'
 
+import { AuthContext } from './AuthContext'
+
 const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) => {
+
+    const { signIn }  = React.useContext(AuthContext)
+
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.'),
         password: yup.string().required('This field is required.')
@@ -48,18 +49,13 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
 
         setMessage({ show: false, message: ''})
 
-        const response = await axios.post(`${IP}/signin`, values)
-        const data = response.data
+        const trySign = await signIn(values['username'], values['password'])
 
-        if (data.error)
+        if (trySign && trySign.error)
             return setMessage({
                 show: true,
-                message: data.message
+                message: trySign.message
             })
-
-        console.log(data)
-
-        // add logic for signing in
     }
 
     const [passwordSettings, setPasswordSettings] = React.useState({
