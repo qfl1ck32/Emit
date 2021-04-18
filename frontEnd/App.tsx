@@ -135,7 +135,6 @@ export default function App() {
 
   const authContext = React.useMemo(authContextFunc, [])
 
-  console.log(initialLoginState)
   return loginState.isLoading ? null : (
     <AuthContext.Provider value = { authContext }>
 
