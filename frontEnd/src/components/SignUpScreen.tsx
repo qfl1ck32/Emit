@@ -6,12 +6,14 @@ import {
     TouchableOpacity,
     Text,
     Keyboard,
+    Alert
 } from 'react-native'
 
 import StyledInputWithController from './StyledInputWIthController'
 
 import PasswordStrengthMeter from './PasswordStrengthMeter'
 
+import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
 
 import { useDebouncedCallback } from 'use-debounce'
@@ -105,10 +107,7 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
         const trySignUp = await signUp(values['username'], values['email'], values['password'])
 
         if (trySignUp && trySignUp.error)
-            return setMessage({
-                show: true,
-                message: trySignUp.message
-            })
+            return Alert.alert('Sign up', trySignUp.message)
 
         return navigation.navigate('LoginScreen', {
             username: values['username'],
@@ -158,7 +157,7 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
                 <Text style = { styles.textHeader }>Welcome!</Text>
             </View>
 
-            <View style = { styles.footer }>
+            <Animatable.View animation = 'fadeInUpBig' duration = { 500 } style = { styles.footer }>
 
                 <StyledInputWithController
                     title = 'Username'
@@ -226,7 +225,7 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigation.navigate('LoginScreen') }>
+                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigation.goBack() }>
                         <Text style = { [styles.textSign, { color: 'green' }] }>Log in</Text>
                     </TouchableOpacity>
                 </View>
@@ -239,7 +238,7 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
                     </View>
                 }
 
-            </View>
+            </Animatable.View>
 
         </View>
     )

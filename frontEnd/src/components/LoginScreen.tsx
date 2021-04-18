@@ -5,7 +5,8 @@ import {
     View,
     TouchableOpacity,
     Text,
-    Keyboard
+    Keyboard,
+    Alert
 } from 'react-native'
 
 import StyledInputWithController from './StyledInputWIthController'
@@ -47,15 +48,10 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
 
     const onSubmit = async (values: object) => {
 
-        setMessage({ show: false, message: ''})
-
         const trySign = await signIn(values['username'], values['password'])
 
         if (trySign && trySign.error)
-            return setMessage({
-                show: true,
-                message: trySign.message
-            })
+            Alert.alert('Sign in', trySign.message)
     }
 
     const [passwordSettings, setPasswordSettings] = React.useState({
@@ -70,19 +66,9 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
         })
     }
 
-    const [message, setMessage] = React.useState({
-        show: false,
-        message: ''
-    })
-
-    const hideMessage = () => {
-        if (message.show)
-            return setMessage({ show: false, message: '' })
-    }
-
     const values = getValues()
 
-    const formProps = { errors, control, dirtyFields, values, touchedFields, onChangeCallback: hideMessage }
+    const formProps = { errors, control, dirtyFields, values, touchedFields }
 
     return (
         <View style = { styles.container }>
@@ -91,7 +77,7 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
                 <Text style = { styles.textHeader }>Welcome!</Text>
             </View>
 
-            <View style = { styles.footer }>
+            <Animatable.View animation = 'fadeInUpBig' duration = { 500 } style = { styles.footer }>
 
                 <StyledInputWithController
                     title = 'Username'
@@ -131,15 +117,7 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
                     </TouchableOpacity>
                 </View>
 
-                { message.show && 
-                    <Animatable.View animation = 'shake' style = { styles.message }>
-                        <Text style = { styles.error }>
-                            { message.message }
-                        </Text>
-                    </Animatable.View>
-                }
-
-            </View>
+            </Animatable.View>
 
         </View>
     )
