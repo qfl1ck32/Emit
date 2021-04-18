@@ -222,17 +222,13 @@ const checkEmailTaken = async (email: string) => {
 
 app.post('/signup', async (req, res) => {
 
-    const { username, email, password, confirmPassword } = req.body
+    const { username, email, password } = req.body
 
     if (!checkUsernameTaken(username))
         return res.json(error('The username is already taken.'))
 
     if (!checkEmailTaken(email))
         return res.json(error('The email is already taken.'))
-
-    if (password != confirmPassword)
-        return res.json(error('The passwords do not match.'))
-
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
