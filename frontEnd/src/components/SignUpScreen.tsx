@@ -225,14 +225,6 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
                     </TouchableOpacity>
                 </View>
 
-                { message.show && 
-                    <View style = { styles.message }>
-                        <Text style = { styles.error }>
-                            { message.message }
-                        </Text>
-                    </View>
-                }
-
             </Animatable.View>
 
         </View>
