@@ -225,7 +225,7 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigation.goBack() }>
+                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigation.navigate('LoginScreen') }>
                         <Text style = { [styles.textSign, { color: 'green' }] }>Log in</Text>
                     </TouchableOpacity>
                 </View>
