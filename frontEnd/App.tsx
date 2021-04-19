@@ -12,19 +12,22 @@ import { connect, Provider } from 'react-redux'
 import rootStore from './src/components/Root/rootStore'
 
 import ActionType from './src/components/Root/ActionType'
-import { checkAuthenticated } from './src/assets/auth/auth'
+
+import { checkAuthenticated } from './src/assets/auth/checkAuthenticated'
 
 const App = () => {
 
   React.useEffect(() => {
     const bootstrapAsync = async () => {
 
+      await checkAuthenticated()
+
       const accessToken = await SecureStore.getItemAsync('accessToken')
       const refreshToken = await SecureStore.getItemAsync('refreshToken')
 
       return rootStore.dispatch({
-          type: ActionType.RESTORE_TOKEN,
-          tokens: !(accessToken && refreshToken && await checkAuthenticated()) ? null : {
+          type: ActionType.RESTORE_TOKENS,
+          tokens: !(accessToken && refreshToken) ? null : {
             accessToken,
             refreshToken
           }
@@ -41,7 +44,8 @@ const App = () => {
   )
 }
 
-const RootNavigation = props => {
+const RootNavigation = (props: any) => {
+
   return props.isLoading ? null : (
     <NavigationContainer>
       {
@@ -51,6 +55,7 @@ const RootNavigation = props => {
       }
     </NavigationContainer>
   )
+
 }
 
 const Root = connect(state => state)(RootNavigation)
