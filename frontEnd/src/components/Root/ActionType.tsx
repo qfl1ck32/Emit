@@ -5,7 +5,7 @@ enum ActionType {
     
     RESTORE_TOKENS = 3,
 
-    UPDATE_TOKENS = 4
+    UPDATE_ACCESS_TOKEN = 4
 }
 
 export default ActionType
