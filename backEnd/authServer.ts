@@ -25,9 +25,6 @@ app.use(express.urlencoded({
 }))
 
 
-
-
-
 app.post('/verifyAccessToken', verifyAccessToken, async (req, res) => {
     return res.sendStatus(200)
 })
