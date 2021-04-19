@@ -9,8 +9,8 @@ import express from 'express'
 import RedisConnection from './RedisConnection'
 
 const   client = RedisConnection.getInstance().getClient(),
-        redisAccessTokenExpiration  = 5,
-        redisRefreshTokenExpiration = 10,
+        redisAccessTokenExpiration  = 3,
+        redisRefreshTokenExpiration = 15,
 
         accessTokenExpiration = redisAccessTokenExpiration.toString() + 's',
         refreshTokenExpiration = redisRefreshTokenExpiration.toString() + 's'
@@ -82,7 +82,6 @@ export const logoutToken = async (req: express.Request, res: express.Response) =
 }
 
 export const verifyAccessToken = async (req: express.Request, res: express.Response, next: Function) => {
-
     const authTokens = req.headers['authorization'].split(' ')
 
     if (authTokens[1] == 'null')
