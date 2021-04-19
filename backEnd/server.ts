@@ -30,7 +30,6 @@ const success = (message = {}) => {
 }
 
 app.get('/restrictedAPI', verifyAccessToken, async (req, res) => {
-    console.log('hehe intru')
     return res.json(success('Nice!'))
 })
 
