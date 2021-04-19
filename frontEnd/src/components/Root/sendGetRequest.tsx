@@ -1,35 +1,14 @@
-import rootStore from './rootStore'
-import axios from 'axios'
+import serverIP from '../../assets/serverIP.json'
 
-import signOut from './signOut'
-import { checkAuthenticated } from '../../assets/auth/auth'
-
-import IP from '../../assets/serverIP.json'
+import withAutoResend, { RequestType } from './requestWrapperAPI'
 
 const sendGetRequest = async (data: any) => {
-    if (!await checkAuthenticated())
-      return signOut()
-  
-    let response: object
-  
-    if (!rootStore.getState().userTokens)
-      return -1
-  
-    const accessToken = rootStore.getState().userTokens?.accessToken
-  
-    try {
-      response = (await axios.get(`${IP}/restrictedAPI`, {
-        headers: {
-          Authorization: `Bearer ` + accessToken
-        }
-      })).data
-    }
-  
-    catch (err) {
-      return 0
-    }
-  
-    return response
+    const response = await withAutoResend(RequestType.GET, `${serverIP}/restrictedAPI`)
+
+    if (!response)
+      return
+
+    return response.data
 }
 
 export default sendGetRequest

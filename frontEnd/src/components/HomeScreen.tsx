@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { View, Button, StyleSheet } from 'react-native'
+import { View, Button, StyleSheet, Alert } from 'react-native'
 
 import signOut from './Root/signOut'
 import sendGetRequest from './Root/sendGetRequest'
@@ -10,7 +10,8 @@ const HomeScreen = () => {
     const test = async () => {
         const resp = await sendGetRequest({})
 
-        console.log(resp)
+        if (resp)
+            Alert.alert('Test', resp.message)
     }
 
     return (
