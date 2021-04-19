@@ -4,11 +4,14 @@ import IP from '../authServerIP.json'
 
 import axios, { AxiosError } from 'axios'
 
-const handle401 = async (): Promise <boolean> => {
+import signOut from '../../components/Root/signOut'
+import updateAccessToken from '../../components/Root/updateAccessToken'
+
+const handle401 = async (): Promise <void> => {
     const refreshToken = await SecureStore.getItemAsync('refreshToken')
 
     if (!refreshToken)
-        return false
+        return signOut()
 
     try {
         const response = await axios.post(`${IP}/verifyRefreshToken`, {}, {
@@ -17,33 +20,27 @@ const handle401 = async (): Promise <boolean> => {
             }
         })
 
-        await SecureStore.setItemAsync('accessToken', response.data.accessToken)
-        return true
+        return await updateAccessToken(response.data.accessToken)
     }
 
     catch (err) {
         const error = err as AxiosError // error.response.status == 403?
-
-        await SecureStore.deleteItemAsync('accessToken')
-        await SecureStore.deleteItemAsync('refreshToken')
-        return false
+        return signOut()
     }
 }
 
-export const checkAuthenticated = async (): Promise <boolean> => {
+export const checkAuthenticated = async (): Promise <void> => {
     const accessToken = await SecureStore.getItemAsync('accessToken')
 
     if (!accessToken)
-        return false
+        return signOut()
 
     try {
-        await axios.post(`${IP}/verifyAccessToken`, {}, {
+        return await axios.post(`${IP}/verifyAccessToken`, {}, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
         })
-
-        return true
     }
 
     catch (err) {
@@ -54,15 +51,10 @@ export const checkAuthenticated = async (): Promise <boolean> => {
             case 401:
                 return await handle401()
 
-
             case 403: {
-                await SecureStore.deleteItemAsync('accessToken')
-                await SecureStore.deleteItemAsync('refreshToken')
-                return false
+                return signOut()
+                
             }
-
-            default:
-                return false
         }
     }
     
