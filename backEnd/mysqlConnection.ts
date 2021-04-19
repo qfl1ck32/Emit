@@ -1,15 +1,15 @@
 import mysql from 'mysql'
 
-export default class Connection {
+export default class MySQLConnection {
     private connection: mysql.Connection;
 
-    public static instance: Connection;
+    public static instance: MySQLConnection;
     
-    public static getInstance(): Connection {
-        if (Connection.instance == null)
-            Connection.instance = new Connection();
+    public static getInstance(): MySQLConnection {
+        if (MySQLConnection.instance == null)
+            MySQLConnection.instance = new MySQLConnection();
 
-        return Connection.instance;
+        return MySQLConnection.instance;
     }
 
     private constructor() {
