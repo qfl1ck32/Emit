@@ -166,7 +166,6 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
                     { ...formProps }
                 />
 
-
                 <StyledInputWithController
                     title = 'Email'
                     name = 'email'
