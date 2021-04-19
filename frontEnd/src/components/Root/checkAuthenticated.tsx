@@ -1,11 +1,11 @@
 import * as SecureStore from 'expo-secure-store'
 
-import IP from '../authServerIP.json'
+import IP from '../../assets/authServerIP.json'
 
 import axios, { AxiosError } from 'axios'
 
-import signOut from '../../components/Root/signOut'
-import updateAccessToken from '../../components/Root/updateAccessToken'
+import signOut from './signOut'
+import updateAccessToken from './updateAccessToken'
 
 const handle401 = async (): Promise <void> => {
     const refreshToken = await SecureStore.getItemAsync('refreshToken')

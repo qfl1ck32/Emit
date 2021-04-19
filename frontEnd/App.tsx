@@ -13,7 +13,7 @@ import rootStore from './src/components/Root/rootStore'
 
 import ActionType from './src/components/Root/ActionType'
 
-import { checkAuthenticated } from './src/assets/auth/checkAuthenticated'
+import { checkAuthenticated } from './src/components/Root/checkAuthenticated'
 
 const App = () => {
 
