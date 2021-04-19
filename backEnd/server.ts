@@ -13,6 +13,8 @@ app.use(express.urlencoded({
     extended: true
 }))
 
+import { verifyAccessToken } from './authHelpers'
+
 const error = (message = {}) => {
     return {
         error: true,
@@ -27,6 +29,10 @@ const success = (message = {}) => {
     }
 }
 
+app.get('/restrictedAPI', verifyAccessToken, async (req, res) => {
+    console.log('hehe intru')
+    return res.json(success('Nice!'))
+})
 
 app.listen(port, () => {
     console.log(`Listening on port ${ port }.`)
