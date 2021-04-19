@@ -29,6 +29,8 @@ import {
     checkAvailableUsername as checkUsername
 } from '../APIs/SignUp/checkAvailability'
 
+import { signUp } from '../APIs/Root/signUp'
+
 const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
 
     const schema = yup.object().shape({
