@@ -1,9 +1,9 @@
-import authServerIP from '../IPs/authServerIP.json'
+import serverIP from '../IPs/serverIP.json'
 
 import withAutoResend, { RequestType } from './requestWrapperAPI'
 
 const sendGetRequest = async (data: any) => {
-    const response = await withAutoResend(RequestType.GET, `${authServerIP}/restrictedAPI`)
+    const response = await withAutoResend(RequestType.GET, `${serverIP}/restrictedAPI`)
 
     if (!response)
       return
