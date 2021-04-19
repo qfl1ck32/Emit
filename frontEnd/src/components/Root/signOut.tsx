@@ -2,6 +2,8 @@ import rootStore from './rootStore'
 import axios from 'axios'
 import ActionType from './ActionType'
 
+import * as SecureStore from 'expo-secure-store'
+
 import IP from '../../assets/authServerIP.json'
 
 const signOut = async () => {
@@ -16,6 +18,9 @@ const signOut = async () => {
     }
   
     catch (err) { }
+
+    await SecureStore.deleteItemAsync('accessToken')
+    await SecureStore.deleteItemAsync('refreshToken')
   
     rootStore.dispatch({
       type: ActionType.SIGN_OUT,
