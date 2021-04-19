@@ -1,7 +1,7 @@
 import { createStore } from 'redux'
 import ActionType from './ActionType'
 
-interface ReducerState {
+export interface ReducerState {
     isLoading: boolean,
     isSignout: boolean,
     userTokens: null | {
@@ -26,7 +26,7 @@ const initialState: ReducerState = {
   
 const reducer = (prevState, action: ReducerAction): ReducerState => {
     switch(action.type) {
-        case ActionType.RESTORE_TOKEN:
+        case ActionType.RESTORE_TOKENS:
             return {
                 ...prevState,
                 userTokens: action.tokens,
@@ -43,6 +43,15 @@ const reducer = (prevState, action: ReducerAction): ReducerState => {
             return {
                 ...prevState,
                 userTokens: null
+            }
+
+        case ActionType.UPDATE_TOKENS:
+            return {
+                ...prevState,
+                userTokens: {
+                    accessToken: action.tokens?.accessToken || prevState.accessToken,
+                    refreshToken: action.tokens?.refreshToken || prevState.refreshToken
+                }
             }
 
         default:

@@ -3,7 +3,9 @@ enum ActionType {
     SIGN_UP = 1,
     SIGN_OUT = 2,
     
-    RESTORE_TOKEN = 3
+    RESTORE_TOKENS = 3,
+
+    UPDATE_TOKENS = 4
 }
 
 export default ActionType
