@@ -1,12 +1,12 @@
-import rootStore from './rootStore'
+import rootStore from './store'
 import axios from 'axios'
 import * as SecureStore from 'expo-secure-store'
 import ActionType from './ActionType'
 
-import IP from '../../assets/authServerIP.json'
+import authServerIP from '../IPs/authServerIP.json'
 
 const signIn = async (username: string, password: string) => {
-    const response = await axios.post(`${IP}/signin`, { username, password })
+    const response = await axios.post(`${authServerIP}/signin`, { username, password })
   
     if (response.data.error)
       return response.data

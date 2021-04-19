@@ -20,7 +20,7 @@ import * as yup from 'yup'
 
 import { NavigationProps } from './RootStackScreen'
 
-import signIn from './Root/signIn'
+import signIn from '../APIs/Root/signIn'
 
 const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) => {
 

@@ -1,4 +1,4 @@
-import rootStore from './rootStore'
+import rootStore from './store'
 import ActionType from './ActionType'
 
 import * as SecureStore from 'expo-secure-store'

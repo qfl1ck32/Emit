@@ -3,7 +3,7 @@ import React from 'react'
 import { ProgressBar } from 'react-native-paper'
 import { View, Text, StyleSheet } from 'react-native'
 
-import PasswordStrengthChecker from '../helpers/PasswordStrengthChecker'
+import PasswordStrengthChecker from './helpers/PasswordStrengthChecker'
 
 interface Props {
     password: string

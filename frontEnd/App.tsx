@@ -9,11 +9,11 @@ import * as SecureStore from 'expo-secure-store'
 
 import { connect, Provider } from 'react-redux'
 
-import rootStore from './src/components/Root/rootStore'
+import rootStore from './src/APIs/Root/store'
 
-import ActionType from './src/components/Root/ActionType'
+import ActionType from './src/APIs/Root/ActionType'
 
-import { checkAuthenticated } from './src/components/Root/checkAuthenticated'
+import { checkAuthenticated } from './src/APIs/Root/checkAuthenticated'
 
 const App = () => {
 

@@ -2,8 +2,8 @@ import React from 'react'
 
 import { View, Button, StyleSheet, Alert } from 'react-native'
 
-import signOut from './Root/signOut'
-import sendGetRequest from './Root/sendGetRequest'
+import signOut from '../APIs/Root/signOut'
+import sendGetRequest from '../APIs/Root/sendGetRequest'
 
 const HomeScreen = () => {
 

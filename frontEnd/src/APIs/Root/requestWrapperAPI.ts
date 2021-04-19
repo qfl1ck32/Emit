@@ -1,9 +1,9 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 
-import rootStore from './rootStore'
+import rootStore from './store'
 import signOut from './signOut'
 
-import authServerIP from '../../assets/authServerIP.json'
+import authServerIP from '../IPs/authServerIP.json'
 import updateAccessToken from './updateAccessToken'
 
 export enum RequestType {

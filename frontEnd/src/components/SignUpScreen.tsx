@@ -24,15 +24,12 @@ import * as yup from 'yup'
 
 import { NavigationProps } from './RootStackScreen'
 
-import { AuthContext } from './AuthContext'
-
-import IP from '../assets/authServerIP.json'
-
-import axios from 'axios'
+import {
+    checkAvailableEmail as checkEmail,
+    checkAvailableUsername as checkUsername
+} from '../APIs/SignUp/checkAvailability'
 
 const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
-
-    const { signUp } = React.useContext(AuthContext)
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
@@ -44,13 +41,13 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
 
     const usernameAPIValidation = yup.object().shape({
         username: yup.string().test('is-taken', 'Username is already used.', async (username: any) => {
-            return (await axios.post(`${IP}/checkUsernameTaken`, { username })).data
+            return await checkUsername(username)
         })
     })
 
     const emailAPIValidation = yup.object().shape({
         email: yup.string().test('is-taken', 'Email is already used.', async (email: any) => {
-            return (await axios.post(`${IP}/checkEmailTaken`, { email })).data
+            return await checkEmail(email)
         })
     })
 
