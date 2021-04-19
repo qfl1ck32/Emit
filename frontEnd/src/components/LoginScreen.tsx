@@ -123,7 +123,6 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
 
 
 const styles = StyleSheet.create({
-
     container: {
         flex: 1,
         backgroundColor: '#2a8fd0'
