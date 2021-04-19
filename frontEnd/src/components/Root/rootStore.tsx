@@ -14,7 +14,7 @@ type ReducerAction = {
     type: ActionType,
     tokens: null | {
       accessToken: string,
-      refreshToken: string
+      refreshToken?: string
     }
 }
   
@@ -23,7 +23,7 @@ const initialState: ReducerState = {
     isSignout: false,
     userTokens: null
 }
-  
+
 const reducer = (prevState, action: ReducerAction): ReducerState => {
     switch(action.type) {
         case ActionType.RESTORE_TOKENS:
@@ -45,12 +45,12 @@ const reducer = (prevState, action: ReducerAction): ReducerState => {
                 userTokens: null
             }
 
-        case ActionType.UPDATE_TOKENS:
+        case ActionType.UPDATE_ACCESS_TOKEN:
             return {
                 ...prevState,
                 userTokens: {
-                    accessToken: action.tokens?.accessToken || prevState.accessToken,
-                    refreshToken: action.tokens?.refreshToken || prevState.refreshToken
+                    accessToken: action.tokens?.accessToken,
+                    refreshToken: prevState.userTokens?.refreshToken
                 }
             }
 
