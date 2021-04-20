@@ -53,7 +53,6 @@ export const checkAuthenticated = async (): Promise <void> => {
 
             case 403: {
                 return signOut()
-                
             }
         }
     }

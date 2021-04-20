@@ -7,7 +7,7 @@ import authServerIP from '../IPs/authServerIP.json'
 
 const signIn = async (username: string, password: string) => {
     const response = await axios.post(`${authServerIP}/signin`, { username, password })
-  
+
     if (response.data.error)
       return response.data
   

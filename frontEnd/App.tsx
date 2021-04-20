@@ -45,17 +45,16 @@ const App = () => {
 }
 
 const RootNavigation = (props: any) => {
-
   return props.isLoading ? null : (
     <NavigationContainer>
       {
         props.userTokens === null ?
           <RootStackScreen />
-        : <HomeScreen />
+        : 
+          <HomeScreen />
       }
     </NavigationContainer>
   )
-
 }
 
 const Root = connect(state => state)(RootNavigation)
