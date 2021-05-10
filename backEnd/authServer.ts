@@ -1,5 +1,9 @@
 import dotenv from 'dotenv'
-dotenv.config()
+import path from 'path'
+
+dotenv.config({
+    path: path.resolve(__dirname, 'env')
+})
 
 import express from 'express'
 
@@ -15,7 +19,7 @@ import {
 
 const 
     app = express(),
-    port = 8082,
+    port = 8081,
     sendQuery = mysqlConnection.getInstance().sendQuery
 
 
