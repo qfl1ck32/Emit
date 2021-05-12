@@ -3,151 +3,15 @@ import numpy
 import random
 import math
 import json
+from multiprocessing import Process, Lock
+
+import ioSystem
+
 # sursa de invatare / documentatie pentru Funk MF: https://towardsdatascience.com/recommendation-system-matrix-factorization-d61978660b4b
 
 
-class User:
-
-    nameToUser = {}
-
-    def __init__(self, matrixRow, userName, location):
-
-        self.userName = userName
-        self.location = location
-        self.matrixRow = matrixRow
-
-        User.nameToUser.update({userName: self})
-
-
-class Item:
-
-    nameToItem = {}
-
-    def __init__(self, matrixColumn, itemName):
-
-        self.itemName = itemName
-        self.matrixColumn = matrixColumn
-
-        Item.nameToItem.update({itemName: self})
-
-
-class Info:
-
-    @staticmethod
-    def randomTestInput():
-
-        userCnt = 1000
-        itemCnt = 50
-
-        R = numpy.random.rand(userCnt, itemCnt)
-
-        for user in range(userCnt):
-            for item in range(itemCnt):
-                a = random.random()
-                if a < 0.7:
-                    R[user][item] = 0
-
-        return userCnt, itemCnt, R
-
-    @staticmethod
-    def parseRmatrix(inputFileName="Rmatrix.txt"):
-
-        inputMatrixFile = open(inputFileName, "r")
-        inputMatrix = inputMatrixFile.read()
-
-        R = []
-
-        for line in inputMatrix.split('\n'):
-
-            line = [float(el) for el in line.split()]
-            R.append(line)
-
-        userCnt = len(R)
-        itemCnt = len(R[0])
-
-        return userCnt, itemCnt, numpy.array(R)
-
-    @staticmethod
-    def parsePmatrix(inputFileName="Pmatrix.txt"):
-
-        inputMatrixFile = open(inputFileName, "r")
-        inputMatrix = inputMatrixFile.read()
-
-        P = []
-
-        cnt = 0
-        for line in inputMatrix.split('\n'):
-
-            line = line.split()
-            userName = line[0]
-            line = [float(el) for el in line[1:]]
-
-            if userName not in User.nameToUser.keys():
-                User(cnt, userName, (None, None))
-            else:
-                User.nameToUser[userName].matrixRow = cnt
-
-            P.append(line)
-            cnt += 1
-
-        userCnt = len(P)
-        featureCnt = len(P[0])
-
-        return userCnt, featureCnt, numpy.array(P)
-
-    @staticmethod
-    def parseQmatrix(inputFileName="Qmatrix.txt"):
-
-        inputMatrixFile = open(inputFileName, "r")
-        inputMatrix = inputMatrixFile.read()
-
-        Q = []
-
-        cnt = 0
-        for line in inputMatrix.split('\n'):
-
-            line = line.split()
-            itemName = line[0]
-            line = [float(el) for el in line[1:]]
-
-            if itemName not in Item.nameToItem.keys():
-                Item(cnt, itemName)
-            else:
-                Item.nameToItem[itemName].matrixColumn = cnt
-
-            Q.append(line)
-            cnt += 1
-
-        Q = numpy.array(Q)
-        Q = Q.T
-
-        featureCnt = len(Q)
-        itemCnt = len(Q[0])
-
-        return featureCnt, itemCnt, numpy.array(Q)
-
-    @staticmethod
-    def getConfigOpts(inputFileName="ConfigFile.json"):
-
-        # matrixOption - optiunea pentru algoritmul folosit pt searching:
-        # (update adica trecerea de la a folosi matricea R nemodificata la a factoriza in P si Q)
-        #   0 - matricea R, cand trec de un anumit prag de utilizatori sa faca update automat cat
-        #   1 - matricea R tot timpul, fara sa faca update automat dupa un anumit prag de utilizatori
-        #   2 - matricile P si Q, calculate in urma factorizarii
-        #   3 - matricea R din calculeaza la initializare P si Q indiferent de numarul de utilizatori
-        #
-        # updateThreshold - pragul pentru care fac update, (doar pentru matrixOption 0, ignorat in rest)
-        #
-        # Rmatrix - numele fisierului unde se gaseste matricea R (ignorat pentru matrixOption 2)
-        # Pmatrix - numele fisierului unde se gaseste matricea P (ignorat pentru matrixOption 1)
-        # Qmatrix - numele fisierului unde se gaseste matricea Q (ignorat pentru matrixOption 1)
-
-        inputFile = open(inputFileName, "r")
-        inputStr = inputFile.read()
-
-        configOpts = json.loads(inputStr)
-        return configOpts
-
+# nu am metoda de stergere, chiar daca utilizatorul isi sterge contul,
+# algoritmului ii este util sa aiba ponderile in continuare
 
 class Learner:
 
@@ -158,8 +22,8 @@ class Learner:
 
         for i in range(TCNT):
 
-            # userCnt, itemCnt, R = Info.parseRmatrix()
-            userCnt, itemCnt, R = Info.randomTestInput()
+            # userCnt, itemCnt, R = ioSystem.parseRmatrix()
+            userCnt, itemCnt, R = ioSystem.randomTestInput()
             featureCnt = 20
 
             ml = Learner(R=R, userCnt=userCnt, featureCnt=featureCnt, itemCnt=itemCnt, stdLearningRate=0.1)
@@ -197,7 +61,7 @@ class Learner:
 
         return dotProduct / (v1Norm * v2Norm)
 
-    def __init__(self, userCnt, itemCnt, featureCnt, R=None, P=None, Q=None, useFactorization=True, stdRoundCnt=5000, stdLearningRate=0.005, stdAcceptanceThreshold=0.1, stdMinProgress=0.00001):
+    def __init__(self, userCnt, itemCnt, featureCnt, R=None, P=None, Q=None, useFactorization=True, stdRoundCnt=5000, stdLearningRate=0.005, stdAcceptanceThreshold=0.1, stdMinProgress=0.00001, similarity='COSINE'):
 
         self.R = R
         self.Q = Q
@@ -213,6 +77,14 @@ class Learner:
         self.stdAcceptanceThreshold = stdAcceptanceThreshold
         self.stdMinProgress = stdMinProgress
 
+        if similarity == 'COSINE':
+            self.similarity = Learner.cosineSimilarity
+        elif similarity == 'EUCLIDEAN':
+            self.similarity = Learner.euclideanDistance
+
+        self.learnerLock = Lock()
+
+    # !!!!!! thread unsafe !!!!!!
     def factorizeMatrix(self, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None):
 
         returnStatus = ""
@@ -283,6 +155,8 @@ class Learner:
     # !!!!!!!!!!!! mentine Q fixat !!!!!!!!!!!!!!!!!
     def addNewUser(self, newRline, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None, matrixFactorized=None):
 
+        self.learnerLock.acquire()
+
         if matrixFactorized is None:
             matrixFactorized = self.useFactorization
 
@@ -347,13 +221,18 @@ class Learner:
 
             returnStatus += f"\ntime elapsed: {time.time() - startTime}; MSE: {oldMSE}\n"
 
+            self.learnerLock.release()
+
             return returnStatus
 
         else:  # cazul cand fac update doar la matricea R
             self.R = numpy.vstack([self.R, newRline])
+            self.learnerLock.release()
 
     # !!!!!!!!!!!! mentine Q fixat !!!!!!!!!!!!!!!!!
     def changeUser(self, userIndex, updatedRline, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None, matrixFactorized=None):
+
+        self.learnerLock.acquire()
 
         if matrixFactorized is None:
             matrixFactorized = self.useFactorization
@@ -414,13 +293,48 @@ class Learner:
 
             returnStatus += f"\ntime elapsed: {time.time() - startTime}; MSE: {oldMSE}\n"
 
+            self.learnerLock.release()
+
             return returnStatus
 
         else:  # cazul cand fac update doar la matricea R
             self.R[userIndex] = updatedRline
+            self.learnerLock.release()
 
+    def getUserSimilarity(self, fstUserIndex, sndUserIndex, matrixFactorized=None):
 
-# voi avea un fisier in care retin starea curenta a recommender ului pentru cazul cand inchid serverul
+        self.learnerLock.acquire()
+
+        if matrixFactorized is None:
+            matrixFactorized = self.useFactorization
+
+        fstUserLine = None
+        sndUserLine = None
+
+        # daca verific asemanarea folosind matricile P si Q
+        if matrixFactorized is True:
+
+            if self.P is None or self.Q is None:
+                raise ValueError("P or Q matrices are not initialized!")
+
+            fstUserLine = numpy.empty(shape=self.itemCnt)
+            for item in range(self.itemCnt):
+
+                fstUserLine[item] = numpy.dot(self.P[fstUserIndex, :], self.Q[:, item])
+
+            sndUserLine = numpy.empty(shape=self.itemCnt)
+            for item in range(self.itemCnt):
+                sndUserLine[item] = numpy.dot(self.P[sndUserIndex, :], self.Q[:, item])
+
+        # daca verific asemanarea folosind direct matricea R
+        else:
+            fstUserLine = self.R[fstUserIndex, :]
+            sndUserLine = self.R[sndUserIndex, :]
+
+        self.learnerLock.release()
+
+        return self.similarity(fstUserLine, sndUserLine)
+
 
 class Recommender:
 
@@ -428,7 +342,7 @@ class Recommender:
 
         self.learner = None
 
-        self.config = Info.getConfigOpts(configFileName)
+        self.config = ioSystem.getConfigOpts(configFileName)
 
         if self.config["matrixOption"] == 0:
 
@@ -436,7 +350,7 @@ class Recommender:
             # va trebui sa apelez din recommender factorizarea matricii
             # si sa setez self.learner.useFactorization = True
 
-            userCnt, itemCnt, R = Info.parseRmatrix()
+            userCnt, itemCnt, R = ioSystem.parseRmatrix()
 
             useFactorization = False
             if userCnt >= self.config["updateThreshold"]:
@@ -450,11 +364,12 @@ class Recommender:
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
                                    stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
-                                   stdRoundCnt=self.config["stdRoundCnt"])
+                                   stdRoundCnt=self.config["stdRoundCnt"],
+                                   similarity=self.config["similarity"])
 
         elif self.config["matrixOption"] == 1:
 
-            userCnt, itemCnt, R = Info.parseRmatrix()
+            userCnt, itemCnt, R = ioSystem.parseRmatrix()
 
             self.learner = Learner(R=R, P=None, Q=None,
                                    useFactorization=False,
@@ -464,12 +379,13 @@ class Recommender:
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
                                    stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
-                                   stdRoundCnt=self.config["stdRoundCnt"])
+                                   stdRoundCnt=self.config["stdRoundCnt"],
+                                   similarity=self.config["similarity"])
 
         elif self.config["matrixOption"] == 2:
 
-            userCnt, featureCnt, P = Info.parsePmatrix()
-            featureCnt, itemCnt, Q = Info.parseQmatrix()
+            userCnt, featureCnt, P = ioSystem.parsePmatrix()
+            featureCnt, itemCnt, Q = ioSystem.parseQmatrix()
 
             self.learner = Learner(R=None, P=P, Q=Q,
                                    userCnt=userCnt,
@@ -479,11 +395,12 @@ class Recommender:
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
                                    stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
-                                   stdRoundCnt=self.config["stdRoundCnt"])
+                                   stdRoundCnt=self.config["stdRoundCnt"],
+                                   similarity=self.config["similarity"])
 
         elif self.config["matrixOption"] == 3:
 
-            userCnt, itemCnt, R = Info.parseRmatrix()
+            userCnt, itemCnt, R = ioSystem.parseRmatrix()
 
             self.learner = Learner(R=R, P=None, Q=None,
                                    userCnt=userCnt,
@@ -493,12 +410,105 @@ class Recommender:
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
                                    stdAcceptanceThreshold=self.config["stdAcceptanceThreshold"],
-                                   stdRoundCnt=self.config["stdRoundCnt"])
+                                   stdRoundCnt=self.config["stdRoundCnt"],
+                                   similarity=self.config["similarity"])
 
             self.learner.factorizeMatrix()
 
+    # generator, cate o instanta pt fiecare proces de request
+    def getSimilarUsers(self, currentUserIndex):
 
-# Learner.test1(10)
+        simp1 = self.config[f"{self.config['similarity']}SimP1"]
+        simp2 = self.config[f"{self.config['similarity']}SimP2"]
 
-# a = Recommender()
+        while True:
+
+            nearUsersIds = ioSystem.getNearUsers(self.config["nearUsersBatchCnt"], currentUserIndex)
+
+            # M1 - cel mai probabil de recomandat: 70%, similarity > simp1
+            # M2 - al doilea cel mai probabil: 20%, simp1 > similarity > simp2
+            # M3 - cel mai putin probabil: 10%, simp2 > similarity
+            # se aplica daca mai sunt elemente in fiecare dintre M1, M2, M3
+            # daca nu mai sunt, probabilitatile se modifica
+
+            M1 = []
+            M2 = []
+            M3 = []
+
+            # calculez similaritatile
+            for userId in nearUsersIds:
+
+                sim = self.learner.getUserSimilarity(currentUserIndex, userId)
+
+                if sim >= simp1:
+                    M1.append(userId)
+
+                elif simp1 > sim >= simp2:
+                    M2.append(userId)
+
+                else:
+                    M3.append(userId)
+
+            # cat timp am persoane "cele mai similare" in acest batch
+            # selectez cu probabilitatile descrise mai sus una dintre ele
+            while len(M1) > 0:
+
+                selectFrom = []
+
+                m1i = random.choice(range(len(M1)), k=1)[0]
+
+                m2i = None
+                if len(M2) > 0:
+                    m2i = random.choice(range(len(M2)), k=1)[0]
+
+                m3i = None
+                if len(M3) > 0:
+                    m3i = random.choice(range(len(M3)), k=1)[0]
+
+                m1 = M1[m1i]
+                selectFrom = [m1, m1, m1, m1, m1, m1, m1]
+
+                m2 = None
+                if m2i is not None:
+                    m2 = M2[m2i]
+                    selectFrom.extend([m2, m2])
+
+                m3 = None
+                if m3i is not None:
+                    m3 = M3[m3i]
+                    selectFrom.append(m3)
+
+                selected = random.choice(selectFrom, k=1)[0]
+                if selected == m1:
+                    M1.pop(m1i)
+                elif selected == m2:
+                    M2.pop(m2i)
+                elif selected == m3:
+                    M3.pop(m3i)
+
+                yield selected
+
+    def addNewUser(self, attributes):
+
+        if isinstance(attributes, numpy.ndarray) is False:
+            attributes = numpy.array(attributes)
+
+        self.learner.addNewUser(newRline=attributes)
+
+        if self.config["matrixOption"] == 0 and self.learner.useFactorization is False:
+
+            self.learner.learnerLock.acquire()
+
+            if self.learner.userCnt + 1 > self.config["updateThreshold"]:
+                self.learner.factorizeMatrix()
+                self.learner.useFactorization = True
+
+            self.learner.learnerLock.release()
+
+
+if __name__ == "__main__":
+    recommender = Recommender("ConfigFile.json")
+
+
+
 
