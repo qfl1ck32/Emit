@@ -1,0 +1,12 @@
+{
+  "matrixOption": 0,
+  "updateThreshold": 100,
+  "Rmatrix": "Rmatrix.txt",
+  "Pmatrix": "Pmatrix.txt",
+  "Qmatrix": "Qmatrix.txt",
+  "featureCntProcentage": 0.4,
+  "stdLearningRate": 0.1,
+  "stdAcceptanceThreshold": 0.1,
+  "stdMinProgress": 0.00001,
+  "stdRoundCnt": 5000
+}
