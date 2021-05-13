@@ -133,10 +133,10 @@ class Learner:
                         MSE += (self.R[user][item] - numpy.dot(self.P[user, :], self.Q[:, item])) ** 2
 
             # print(oldMSE)
-            if MSE > oldMSE:
+            '''if MSE > oldMSE:
                 returnStatus += f"min value overshot"
                 oldMSE = MSE
-                break
+                break'''
 
             if oldMSE - MSE < minProgress:
                 returnStatus += f"pleateau achieved: {oldMSE - MSE}"
@@ -301,35 +301,35 @@ class Learner:
             self.R[userIndex] = updatedRline
             self.learnerLock.release()
 
-    def getUserSimilarity(self, fstUserIndex, sndUserIndex, matrixFactorized=None):
-
-        self.learnerLock.acquire()
+    # !!!!!!!!! thread unsafe !!!!!!!!!!
+    # returneaza efectiv coloana din self.R
+    # sau produsul scalar corespunzator intre liniile si coloanele din P si Q
+    # in functie de caz
+    def getRrow(self, userIndex, matrixFactorized=None):
 
         if matrixFactorized is None:
             matrixFactorized = self.useFactorization
 
-        fstUserLine = None
-        sndUserLine = None
-
-        # daca verific asemanarea folosind matricile P si Q
         if matrixFactorized is True:
 
             if self.P is None or self.Q is None:
                 raise ValueError("P or Q matrices are not initialized!")
 
-            fstUserLine = numpy.empty(shape=self.itemCnt)
+            userLine = numpy.empty(shape=self.itemCnt)
             for item in range(self.itemCnt):
+                userLine[item] = numpy.dot(self.P[userIndex, :], self.Q[:, item])
 
-                fstUserLine[item] = numpy.dot(self.P[fstUserIndex, :], self.Q[:, item])
-
-            sndUserLine = numpy.empty(shape=self.itemCnt)
-            for item in range(self.itemCnt):
-                sndUserLine[item] = numpy.dot(self.P[sndUserIndex, :], self.Q[:, item])
-
-        # daca verific asemanarea folosind direct matricea R
         else:
-            fstUserLine = self.R[fstUserIndex, :]
-            sndUserLine = self.R[sndUserIndex, :]
+            userLine = self.R[userIndex, :]
+
+        return userLine
+
+    def getUserSimilarity(self, fstUserIndex, sndUserIndex, matrixFactorized=None):
+
+        self.learnerLock.acquire()
+
+        fstUserLine = self.getRrow(fstUserIndex, matrixFactorized)
+        sndUserLine = self.getRrow(sndUserIndex, matrixFactorized)
 
         self.learnerLock.release()
 
@@ -359,7 +359,7 @@ class Recommender:
             self.learner = Learner(R=R, P=None, Q=None,
                                    useFactorization=useFactorization,
                                    userCnt=userCnt,
-                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   featureCnt=self.config["featureCnt"],
                                    itemCnt=itemCnt,
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
@@ -374,7 +374,7 @@ class Recommender:
             self.learner = Learner(R=R, P=None, Q=None,
                                    useFactorization=False,
                                    userCnt=userCnt,
-                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   featureCnt=self.config["featureCnt"],
                                    itemCnt=itemCnt,
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
@@ -390,7 +390,7 @@ class Recommender:
             self.learner = Learner(R=None, P=P, Q=Q,
                                    userCnt=userCnt,
                                    useFactorization=True,
-                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   featureCnt=self.config["featureCnt"],
                                    itemCnt=itemCnt,
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
@@ -405,7 +405,7 @@ class Recommender:
             self.learner = Learner(R=R, P=None, Q=None,
                                    userCnt=userCnt,
                                    useFactorization=True,
-                                   featureCnt=itemCnt * self.config["featureCntProcentage"],
+                                   featureCnt=self.config["featureCnt"],
                                    itemCnt=itemCnt,
                                    stdLearningRate=self.config["stdLearningRate"],
                                    stdMinProgress=self.config["stdMinProgress"],
@@ -413,13 +413,13 @@ class Recommender:
                                    stdRoundCnt=self.config["stdRoundCnt"],
                                    similarity=self.config["similarity"])
 
-            self.learner.factorizeMatrix()
+            print(self.learner.factorizeMatrix())
 
     # generator, cate o instanta pt fiecare proces de request
     def getSimilarUsers(self, currentUserIndex):
 
-        simp1 = self.config[f"{self.config['similarity']}SimP1"]
-        simp2 = self.config[f"{self.config['similarity']}SimP2"]
+        simp1 = self.config[f"{self.config['similarity']}_SimP1"]
+        simp2 = self.config[f"{self.config['similarity']}_SimP2"]
 
         while True:
 
@@ -449,21 +449,23 @@ class Recommender:
                 else:
                     M3.append(userId)
 
+            print("lungimi M uri: ", len(M1), len(M2), len(M3))
+
             # cat timp am persoane "cele mai similare" in acest batch
             # selectez cu probabilitatile descrise mai sus una dintre ele
             while len(M1) > 0:
 
                 selectFrom = []
 
-                m1i = random.choice(range(len(M1)), k=1)[0]
+                m1i = random.choice(range(len(M1)))
 
                 m2i = None
                 if len(M2) > 0:
-                    m2i = random.choice(range(len(M2)), k=1)[0]
+                    m2i = random.choice(range(len(M2)))
 
                 m3i = None
                 if len(M3) > 0:
-                    m3i = random.choice(range(len(M3)), k=1)[0]
+                    m3i = random.choice(range(len(M3)))
 
                 m1 = M1[m1i]
                 selectFrom = [m1, m1, m1, m1, m1, m1, m1]
@@ -478,7 +480,7 @@ class Recommender:
                     m3 = M3[m3i]
                     selectFrom.append(m3)
 
-                selected = random.choice(selectFrom, k=1)[0]
+                selected = random.choice(selectFrom)
                 if selected == m1:
                     M1.pop(m1i)
                 elif selected == m2:
@@ -505,9 +507,77 @@ class Recommender:
 
             self.learner.learnerLock.release()
 
+    def changeUser(self, userIndex, attributes):
+
+        if isinstance(attributes, numpy.ndarray) is False:
+            attributes = numpy.array(attributes)
+
+        self.learner.changeUser(userIndex, attributes)
+
+
+# index 18: 0 0.322 0 0 0 0 0 0 0 0.501 0.859 0.222 0 0 0
+# index 29: 0 0 0 0 0 0 0 0.059 0 0.77 0 0 0 0.737 0
 
 if __name__ == "__main__":
     recommender = Recommender("ConfigFile.json")
+
+    l = recommender.learner.R[18]
+
+    simgen = recommender.getSimilarUsers(18)
+
+    for i in range(10):
+
+        recIndex = next(simgen)
+        recl = recommender.learner.R[recIndex]
+
+        print("prima persoana R: ", end=' ')
+        for j in range(15):
+            print(round(l[j], 2), end=' ')
+
+        l = recommender.learner.getRrow(18)
+
+        print("\nprima persoana dupa ML: ", end=' ')
+        for j in range(15):
+            print(round(l[j], 2), end=' ')
+
+        print("\na doua persoana R: ", end=' ')
+        for j in range(15):
+            print(round(recl[j], 2), end=' ')
+
+        recl = recommender.learner.getRrow(recIndex)
+
+        print("\na doua persoana dupa ML: ", end=' ')
+        for j in range(15):
+            print(round(recl[j], 2), end=' ')
+
+        print(f"\nsimilaritate: {recommender.learner.getUserSimilarity(18, recIndex)}")
+
+        l = recommender.learner.R[18]
+        recl = recommender.learner.R[recIndex]
+
+        print("diferentele intre activitatile votate R: ", end=' ')
+
+        for j in range(15):
+            if l[j] == 0 or recl[j] == 0:
+                print(0, end=' ')
+            else:
+                print(round(l[j] - recl[j], 2), end=' ')
+        print('\n\n')
+
+        l = recommender.learner.getRrow(18)
+        recl = recommender.learner.getRrow(recIndex)
+
+        print("diferentele intre activitatile votate dupa ML: ", end=' ')
+
+        for j in range(15):
+            if l[j] == 0 or recl[j] == 0:
+                print(0, end=' ')
+            else:
+                print(round(l[j] - recl[j], 2), end=' ')
+        print('\n\n')
+
+
+
 
 
 

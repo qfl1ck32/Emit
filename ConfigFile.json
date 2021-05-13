@@ -1,12 +1,18 @@
 {
-  "matrixOption": 0,
+  "matrixOption": 3,
   "updateThreshold": 100,
   "Rmatrix": "Rmatrix.txt",
   "Pmatrix": "Pmatrix.txt",
   "Qmatrix": "Qmatrix.txt",
-  "featureCntProcentage": 0.4,
+  "featureCnt": 15,
   "stdLearningRate": 0.1,
-  "stdAcceptanceThreshold": 0.1,
+  "stdAcceptanceThreshold": 0.01,
   "stdMinProgress": 0.00001,
-  "stdRoundCnt": 5000
+  "stdRoundCnt": 5000,
+  "similarity": "COSINE",
+  "nearUsersBatchCnt": 1000,
+  "COSINE_SimP1": 0.7,
+  "COSINE_SimP2": 0.5,
+  "EUCLIDEAN_SimP1": 0,
+  "EUCLIDEAN_SimP2": 0
 }

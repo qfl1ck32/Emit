@@ -38,7 +38,9 @@ def parseRmatrix(inputFileName="Rmatrix.txt"):
         for line in inputMatrix.split('\n'):
 
             line = [float(el) for el in line.split()]
-            R.append(line)
+
+            if len(line) > 0:  # sa nu fie o linie vida obtinuta artificial dupa split
+                R.append(line)
 
         userCnt = len(R)
         itemCnt = len(R[0])
@@ -61,7 +63,9 @@ def parsePmatrix(inputFileName="Pmatrix.txt"):
         for line in inputMatrix.split('\n'):
 
             line = [float(el) for el in line.split()]
-            P.append(line)
+
+            if len(line) > 0:
+                P.append(line)
 
         userCnt = len(P)
         featureCnt = len(P[0])
@@ -82,7 +86,9 @@ def parseQmatrix(inputFileName="Qmatrix.txt"):
         for line in inputMatrix.split('\n'):
 
             line = [float(el) for el in line.split()]
-            Q.append(line)
+
+            if len(line) > 0:
+                Q.append(line)
 
         Q = numpy.array(Q)
         Q = Q.T
