@@ -7,12 +7,12 @@
   "featureCnt": 15,
   "stdLearningRate": 0.1,
   "stdAcceptanceThreshold": 0.01,
-  "stdMinProgress": 0.00001,
+  "stdMinProgress": 0.000001,
   "stdRoundCnt": 5000,
   "similarity": "COSINE",
   "nearUsersBatchCnt": 1000,
   "COSINE_SimP1": 0.7,
   "COSINE_SimP2": 0.5,
-  "EUCLIDEAN_SimP1": 0,
-  "EUCLIDEAN_SimP2": 0
+  "EUCLIDEAN_SimP1": 1.8,
+  "EUCLIDEAN_SimP2": 1.5
 }

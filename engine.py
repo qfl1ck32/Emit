@@ -335,6 +335,14 @@ class Learner:
 
         return self.similarity(fstUserLine, sndUserLine)
 
+    def getUserSimilarityByattr(self, attributes, userIndex, matrixFactorized=None):
+
+        self.learnerLock.acquire()
+        userLine = self.getRrow(userIndex, matrixFactorized)
+        self.learnerLock.release()
+
+        return self.similarity(attributes, userLine)
+
 
 class Recommender:
 
@@ -438,7 +446,7 @@ class Recommender:
             # calculez similaritatile
             for userId in nearUsersIds:
 
-                sim = self.learner.getUserSimilarity(currentUserIndex, userId)
+                sim = self.learner.getUserSimilarity(fstUserIndex=currentUserIndex, sndUserIndex=userId)
 
                 if sim >= simp1:
                     M1.append(userId)
@@ -448,8 +456,6 @@ class Recommender:
 
                 else:
                     M3.append(userId)
-
-            print("lungimi M uri: ", len(M1), len(M2), len(M3))
 
             # cat timp am persoane "cele mai similare" in acest batch
             # selectez cu probabilitatile descrise mai sus una dintre ele
@@ -468,12 +474,12 @@ class Recommender:
                     m3i = random.choice(range(len(M3)))
 
                 m1 = M1[m1i]
-                selectFrom = [m1, m1, m1, m1, m1, m1, m1]
+                selectFrom = [m1] * 16
 
                 m2 = None
                 if m2i is not None:
                     m2 = M2[m2i]
-                    selectFrom.extend([m2, m2])
+                    selectFrom.extend([m2] * 3)
 
                 m3 = None
                 if m3i is not None:
@@ -489,6 +495,32 @@ class Recommender:
                     M3.pop(m3i)
 
                 yield selected
+
+    # generator, cate o instanta pt fiecare proces de request
+    def getSimilarUsersByattr(self, attributes, currentUserIndex):
+
+        if isinstance(attributes, numpy.ndarray) is False:
+            attributes = numpy.array(attributes)
+
+        simp1 = self.config[f"{self.config['similarity']}_SimP1"]
+
+        while True:
+
+            nearUsersIds = ioSystem.getNearUsers(self.config["nearUsersBatchCnt"], currentUserIndex)
+
+            M = []
+
+            # calculez similaritatile
+            for userId in nearUsersIds:
+
+                sim = self.learner.getUserSimilarityByattr(attributes=attributes, userIndex=userId)
+                if sim > simp1:
+                    M.append(userId)
+
+            M.sort(reverse=True)
+
+            for rec in M:
+                yield rec
 
     def addNewUser(self, attributes):
 
@@ -514,67 +546,120 @@ class Recommender:
 
         self.learner.changeUser(userIndex, attributes)
 
+    @staticmethod
+    def test1():
 
-# index 18: 0 0.322 0 0 0 0 0 0 0 0.501 0.859 0.222 0 0 0
-# index 29: 0 0 0 0 0 0 0 0.059 0 0.77 0 0 0 0.737 0
+        simgen = recommender.getSimilarUsers(currentUserIndex=18)
+        print("here")
+        for i in range(10):
+
+            l = recommender.learner.R[18]
+
+            recIndex = next(simgen)
+            recl = recommender.learner.R[recIndex]
+
+            print("prima persoana R: ", end=' ')
+            for j in range(15):
+                print(round(l[j], 2), end=' ')
+
+            l = recommender.learner.getRrow(18)
+
+            print("\nprima persoana dupa ML: ", end=' ')
+            for j in range(15):
+                print(round(l[j], 2), end=' ')
+
+            print("\na doua persoana R: ", end=' ')
+            for j in range(15):
+                print(round(recl[j], 2), end=' ')
+
+            recl = recommender.learner.getRrow(recIndex)
+
+            print("\na doua persoana dupa ML: ", end=' ')
+            for j in range(15):
+                print(round(recl[j], 2), end=' ')
+
+            print(f"\nsimilaritate: {recommender.learner.getUserSimilarity(18, recIndex)}")
+
+            l = recommender.learner.R[18]
+            recl = recommender.learner.R[recIndex]
+
+            print("diferentele intre activitatile votate R: ", end=' ')
+
+            for j in range(15):
+                if l[j] == 0 or recl[j] == 0:
+                    print(0, end=' ')
+                else:
+                    print(round(l[j] - recl[j], 2), end=' ')
+            print('\n\n')
+
+            l = recommender.learner.getRrow(18)
+            recl = recommender.learner.getRrow(recIndex)
+
+            print("diferentele intre activitatile votate dupa ML: ", end=' ')
+
+            for j in range(15):
+                if l[j] == 0 or recl[j] == 0:
+                    print(0, end=' ')
+                else:
+                    print(round(l[j] - recl[j], 2), end=' ')
+            print('\n\n')
+
+    @staticmethod
+    def test2():
+
+        attr = [0.9, 0.8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.9, 0]
+
+        simgen = recommender.getSimilarUsersByattr(attributes=attr, currentUserIndex=18)
+
+        for i in range(10):
+
+            recIndex = next(simgen)
+            recl = recommender.learner.R[recIndex]
+
+            print(*attr)
+
+            print("\na doua persoana R: ", end=' ')
+            for j in range(15):
+                print(round(recl[j], 2), end=' ')
+
+            recl = recommender.learner.getRrow(recIndex)
+
+            print("\na doua persoana dupa ML: ", end=' ')
+            for j in range(15):
+                print(round(recl[j], 2), end=' ')
+
+            print(f"\nsimilaritate: {recommender.learner.getUserSimilarity(18, recIndex)}")
+
+            recl = recommender.learner.R[recIndex]
+
+            print("diferentele intre activitatile votate R: ", end=' ')
+
+            for j in range(15):
+                if attr[j] == 0 or recl[j] == 0:
+                    print(0, end=' ')
+                else:
+                    print(round(attr[j] - recl[j], 2), end=' ')
+
+            recl = recommender.learner.getRrow(recIndex)
+
+            print("diferentele intre activitatile votate dupa ML: ", end=' ')
+
+            for j in range(15):
+                if attr[j] == 0 or recl[j] == 0:
+                    print(0, end=' ')
+                else:
+                    print(round(attr[j] - recl[j], 2), end=' ')
+            print('\n\n')
+
 
 if __name__ == "__main__":
     recommender = Recommender("ConfigFile.json")
 
-    l = recommender.learner.R[18]
+    #recommender.test1()
+    print('\n-------------------------\n')
+    recommender.test2()
 
-    simgen = recommender.getSimilarUsers(18)
 
-    for i in range(10):
-
-        recIndex = next(simgen)
-        recl = recommender.learner.R[recIndex]
-
-        print("prima persoana R: ", end=' ')
-        for j in range(15):
-            print(round(l[j], 2), end=' ')
-
-        l = recommender.learner.getRrow(18)
-
-        print("\nprima persoana dupa ML: ", end=' ')
-        for j in range(15):
-            print(round(l[j], 2), end=' ')
-
-        print("\na doua persoana R: ", end=' ')
-        for j in range(15):
-            print(round(recl[j], 2), end=' ')
-
-        recl = recommender.learner.getRrow(recIndex)
-
-        print("\na doua persoana dupa ML: ", end=' ')
-        for j in range(15):
-            print(round(recl[j], 2), end=' ')
-
-        print(f"\nsimilaritate: {recommender.learner.getUserSimilarity(18, recIndex)}")
-
-        l = recommender.learner.R[18]
-        recl = recommender.learner.R[recIndex]
-
-        print("diferentele intre activitatile votate R: ", end=' ')
-
-        for j in range(15):
-            if l[j] == 0 or recl[j] == 0:
-                print(0, end=' ')
-            else:
-                print(round(l[j] - recl[j], 2), end=' ')
-        print('\n\n')
-
-        l = recommender.learner.getRrow(18)
-        recl = recommender.learner.getRrow(recIndex)
-
-        print("diferentele intre activitatile votate dupa ML: ", end=' ')
-
-        for j in range(15):
-            if l[j] == 0 or recl[j] == 0:
-                print(0, end=' ')
-            else:
-                print(round(l[j] - recl[j], 2), end=' ')
-        print('\n\n')
 
 
 
