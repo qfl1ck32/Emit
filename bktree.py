@@ -1,6 +1,6 @@
 from random import shuffle
 from pickle import dumps, loads
-from multiprocessing import Lock
+from multiprocessing import Lock, Semaphore
 
 
 class Node:
@@ -68,18 +68,35 @@ class BKtree:
 
         self.allNodes = {}  # {nume: nod, ...} - pentru stergere (marcare ca fiind sters) in timp constant
 
-        self.treeChangeLock = Lock()
+        # readers-writers problem
+
+        self.treeLock = Lock()  # lock that can block any operation
+        self.rCntLock = Lock()
+        self.waitingQueue = Semaphore(1)
+
+        self.rCnt = 0
 
     def insert(self, strToInsert, dbId):
 
-        self.treeChangeLock.acquire()
+        # ---- SYNC ----
+
+        self.waitingQueue.acquire()
+        self.treeLock.acquire()
+        self.waitingQueue.release()
+
+        # ---- END SYNC ----
 
         if self.root is None:
 
             self.root = Node(strToInsert, dbId)
             self.allNodes.update({self.root.name: self.root})
 
-            self.treeChangeLock.release()
+            # ---- SYNC ----
+
+            self.treeLock.release()
+
+            # ---- END SYNC ----
+
             return
 
         currentNode = self.root
@@ -93,7 +110,11 @@ class BKtree:
                 elif dbId not in currentNode.dbIds:
                     currentNode.dbIds.add(dbId)
 
-                self.treeChangeLock.release()
+                # ---- SYNC ----
+
+                self.treeLock.release()
+
+                # ---- END SYNC ----
                 return
 
             d = self.distance(currentNode.name, strToInsert)
@@ -112,41 +133,81 @@ class BKtree:
 
                 self.allNodes.update({toInsert.name: toInsert})
 
-                self.treeChangeLock.release()
+                # ---- SYNC ----
+
+                self.treeLock.release()
+
+                # ---- END SYNC ----
+
                 return
 
-        self.treeChangeLock.release()
+        # ---- SYNC ----
+
+        self.treeLock.release()
+
+        # ---- END SYNC ----
 
     def search(self, strToSearch, maxDistance=3):
 
-        if self.root is None:
-            return []
+        # ---- SYNC ----
+
+        self.waitingQueue.acquire()
+        self.rCntLock.acquire()
+        
+        self.rCnt += 1
+        if self.rCnt == 1:
+            self.treeLock.acquire()
+
+        self.waitingQueue.release()
+        self.rCntLock.release()
+
+        # ---- END SYNC ----
 
         foundList = []  # [(nume, distanta, {dbid1, dbid2, ...}), ...]
 
-        workingSet = set()
-        workingSet.add(self.root)
+        if self.root is not None:
 
-        while workingSet:
+            workingSet = set()
+            workingSet.add(self.root)
 
-            currentNode = workingSet.pop()
-            if currentNode.dbIds is not None:  # verific sa nu fie marcat ca sters
+            while workingSet:
 
-                d = self.distance(currentNode.name, strToSearch)
-                if d <= maxDistance:
-                    foundList.append((currentNode.name, currentNode.dbIds))
+                currentNode = workingSet.pop()
+                if currentNode.dbIds is not None:  # verific sa nu fie marcat ca sters
 
-                for nextNode, dist in currentNode.nextNodes:
-                    if nextNode.dbIds is not None and abs(dist - d) <= maxDistance:
-                        workingSet.add(nextNode)
+                    d = self.distance(currentNode.name, strToSearch)
+                    if d <= maxDistance:
+                        foundList.append((currentNode.name, currentNode.dbIds))
 
-        foundList.sort(key=lambda t: t[1])
+                    for nextNode, dist in currentNode.nextNodes:
+                        if nextNode.dbIds is not None and abs(dist - d) <= maxDistance:
+                            workingSet.add(nextNode)
+
+            foundList.sort(key=lambda t: t[1])
+
+        # ---- SYNC ----
+
+        self.rCntLock.acquire()
+
+        self.rCnt -= 1
+        if self.rCnt == 0:
+            self.treeLock.release()
+
+        self.rCntLock.release()
+
+        # ---- END SYNC ----
 
         return foundList
 
     def delete(self, strToDelete, dbId):
 
-        self.treeChangeLock.acquire()
+        # ---- SYNC ----
+
+        self.waitingQueue.acquire()
+        self.treeLock.acquire()
+        self.waitingQueue.release()
+
+        # ---- END SYNC ----
 
         if strToDelete in self.allNodes.keys():
             dbIds = self.allNodes[strToDelete].dbIds
@@ -157,7 +218,11 @@ class BKtree:
                 if not dbIds:
                     dbIds = None
 
-        self.treeChangeLock.release()
+        # ---- SYNC ----
+
+        self.treeLock.release()
+
+        # ---- END SYNC ----
 
 
 def test_bktree():

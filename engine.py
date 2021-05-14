@@ -2,8 +2,7 @@ import time
 import numpy
 import random
 import math
-import json
-from multiprocessing import Process, Lock
+from multiprocessing import Process, Lock, Semaphore
 
 import ioSystem
 from bktree import BKtree
@@ -83,7 +82,13 @@ class Learner:
         elif similarity == 'EUCLIDEAN':
             self.similarity = Learner.euclideanDistance
 
-        self.learnerLock = Lock()
+        # readers-writers problem
+
+        self.learnerLock = Lock()  # lock that can block any operation
+        self.rCntLock = Lock()
+        self.waitingQueue = Semaphore(1)
+
+        self.rCnt = 0
 
     # !!!!!! thread unsafe !!!!!!
     def factorizeMatrix(self, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None):
@@ -156,7 +161,13 @@ class Learner:
     # !!!!!!!!!!!! mentine Q fixat !!!!!!!!!!!!!!!!!
     def addNewUser(self, newRline, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None, matrixFactorized=None):
 
+        # ---- SYNC ----
+
+        self.waitingQueue.acquire()
         self.learnerLock.acquire()
+        self.waitingQueue.release()
+
+        # ---- END SYNC ----
 
         if matrixFactorized is None:
             matrixFactorized = self.useFactorization
@@ -222,18 +233,33 @@ class Learner:
 
             returnStatus += f"\ntime elapsed: {time.time() - startTime}; MSE: {oldMSE}\n"
 
+            # ---- SYNC ----
+
             self.learnerLock.release()
+
+            # ---- END SYNC ----
 
             return returnStatus
 
         else:  # cazul cand fac update doar la matricea R
             self.R = numpy.vstack([self.R, newRline])
+
+            # ---- SYNC ----
+
             self.learnerLock.release()
+
+            # ---- END SYNC ----
 
     # !!!!!!!!!!!! mentine Q fixat !!!!!!!!!!!!!!!!!
     def changeUser(self, userIndex, updatedRline, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None, matrixFactorized=None):
 
+        # ---- SYNC ----
+
+        self.waitingQueue.acquire()
         self.learnerLock.acquire()
+        self.waitingQueue.release()
+
+        # ---- END SYNC ----
 
         if matrixFactorized is None:
             matrixFactorized = self.useFactorization
@@ -294,13 +320,22 @@ class Learner:
 
             returnStatus += f"\ntime elapsed: {time.time() - startTime}; MSE: {oldMSE}\n"
 
+            # ---- SYNC ----
+
             self.learnerLock.release()
+
+            # ---- END SYNC ----
 
             return returnStatus
 
         else:  # cazul cand fac update doar la matricea R
             self.R[userIndex] = updatedRline
+
+            # ---- SYNC ----
+
             self.learnerLock.release()
+
+            # ---- END SYNC ----
 
     # !!!!!!!!! thread unsafe !!!!!!!!!!
     # returneaza efectiv coloana din self.R
@@ -327,20 +362,66 @@ class Learner:
 
     def getUserSimilarity(self, fstUserIndex, sndUserIndex, matrixFactorized=None):
 
-        self.learnerLock.acquire()
+        # ---- SYNC ----
+
+        self.waitingQueue.acquire()
+        self.rCntLock.acquire()
+
+        self.rCnt += 1
+        if self.rCnt == 1:
+            self.learnerLock.acquire()
+
+        self.waitingQueue.release()
+        self.rCntLock.release()
+
+        # ---- END SYNC ----
 
         fstUserLine = self.getRrow(fstUserIndex, matrixFactorized)
         sndUserLine = self.getRrow(sndUserIndex, matrixFactorized)
 
-        self.learnerLock.release()
+        # ---- SYNC ----
+
+        self.rCntLock.acquire()
+
+        self.rCnt -= 1
+        if self.rCnt == 0:
+            self.learnerLock.release()
+
+        self.rCntLock.release()
+
+        # ---- END SYNC ----
 
         return self.similarity(fstUserLine, sndUserLine)
 
     def getUserSimilarityByattr(self, attributes, userIndex, matrixFactorized=None):
 
-        self.learnerLock.acquire()
+        # ---- SYNC ----
+
+        self.waitingQueue.acquire()
+        self.rCntLock.acquire()
+
+        self.rCnt += 1
+        if self.rCnt == 1:
+            self.learnerLock.acquire()
+
+        self.waitingQueue.release()
+        self.rCntLock.release()
+
+        # ---- END SYNC ----
+
         userLine = self.getRrow(userIndex, matrixFactorized)
-        self.learnerLock.release()
+
+        # ---- SYNC ----
+
+        self.rCntLock.acquire()
+
+        self.rCnt -= 1
+        if self.rCnt == 0:
+            self.learnerLock.release()
+
+        self.rCntLock.release()
+
+        # ---- END SYNC ----
 
         return self.similarity(attributes, userLine)
 
@@ -552,13 +633,23 @@ class Recommender:
 
         if self.config["matrixOption"] == 0 and self.learner.useFactorization is False:
 
+            # ---- SYNC ----
+
+            self.learner.waitingQueue.acquire()
             self.learner.learnerLock.acquire()
+            self.learner.waitingQueue.release()
+
+            # ---- END SYNC ----
 
             if self.learner.userCnt + 1 > self.config["updateThreshold"]:
                 self.learner.factorizeMatrix()
                 self.learner.useFactorization = True
 
+            # ---- SYNC ----
+
             self.learner.learnerLock.release()
+
+            # ---- END SYNC ----
 
     def changeUser(self, userIndex, attributes):
 
