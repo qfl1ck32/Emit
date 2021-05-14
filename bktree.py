@@ -1,3 +1,5 @@
+from random import shuffle
+
 class Node:
 
     def __init__(self, name: str, dbId: list):
@@ -15,17 +17,23 @@ class BKtree:
     @staticmethod
     def LevenshteinDistance(fstStr, sndStr):
 
-        levd = [[0 for i in range(len(sndStr))] for j in range(len(fstStr))]
+        levd = [[0 for j in range(len(sndStr) + 1)] for i in range(len(fstStr) + 1)]
 
-        for i in range(1, len(fstStr)):
-            for j in range(1, len(sndStr)):
+        for i in range(1, len(sndStr) + 1):
+            levd[0][i] = i
 
-                if fstStr[i - 1] == sndStr[j - 1]:  # indecsi deplasati cu 1 datorita indexarii de la 0 si indexarii matricei de la 1
+        for i in range(1, len(fstStr) + 1):
+            levd[i][0] = i
+
+        for i in range(1, len(fstStr) + 1):
+            for j in range(1, len(sndStr) + 1):
+
+                if fstStr[i - 1] == sndStr[j - 1]:
                     levd[i][j] = levd[i - 1][j - 1]
                 else:
                     levd[i][j] = 1 + min(levd[i - 1][j - 1], levd[i - 1][j], levd[i][j - 1])
 
-        return levd[len(fstStr) - 1][len(sndStr) - 1]
+        return levd[len(fstStr)][len(sndStr)]
 
     def __init__(self):
 
@@ -74,7 +82,7 @@ class BKtree:
 
                 return
 
-    def search(self, strToSearch, maxDistance=3) -> list(tuple(str, int, set)):
+    def search(self, strToSearch, maxDistance=3):
 
         if self.root is None:
             return []
@@ -111,6 +119,56 @@ class BKtree:
 
                 if not dbIds:
                     dbIds = None
+
+
+def test_bktree():
+
+    f = open("bktestinput.txt", "r+")
+    inp = f.read().split()
+
+    names = []
+
+    dbidcnt = 0
+
+    for name in inp:
+
+        i = 0
+        while i < len(name):
+            if not (ord('a') <= ord(name[i]) <= ord('z') or ord('A') <= ord(name[i]) <= ord('Z')):
+                name = name[:i] + name[i + 1:]
+                i -= 1
+
+            i += 1
+
+        if len(name) > 0:
+            names.append((name, dbidcnt))
+            dbidcnt += 1
+
+    f.close()
+
+    shuffle(names)
+
+    '''g = open('bktestinput.txt', "w")
+    for n in names:
+        g.write(f"{n} ")
+    g.close()'''
+
+    bktree = BKtree()
+
+    for name, dbid in names:
+        bktree.insert(name, dbid)
+
+    print(bktree.search("Calin", maxDistance=1))
+    print(bktree.search("Mihail", maxDistance=2))
+    print(bktree.search("Grig", maxDistance=3))
+    print(bktree.search("Iuia", maxDistance=2))
+
+
+if __name__ == '__main__':
+
+    print(BKtree.LevenshteinDistance('Calin', 'Halin'))
+
+    test_bktree()
 
 
 
