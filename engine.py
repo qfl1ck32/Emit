@@ -546,8 +546,10 @@ class Recommender:
 
         self.learner.changeUser(userIndex, attributes)
 
+
+
     @staticmethod
-    def test1():
+    def test_getSimilarUsers():
 
         simgen = recommender.getSimilarUsers(currentUserIndex=18)
         print("here")
@@ -605,7 +607,7 @@ class Recommender:
             print('\n\n')
 
     @staticmethod
-    def test2():
+    def test2_getSimilarUsersByattr():
 
         attr = [0.9, 0.8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.9, 0]
 
@@ -655,9 +657,9 @@ class Recommender:
 if __name__ == "__main__":
     recommender = Recommender("ConfigFile.json")
 
-    #recommender.test1()
+    #recommender.test_getSimilarUsers()
     print('\n-------------------------\n')
-    recommender.test2()
+    recommender.test2_getSimilarUsersByattr()
 
 
 
