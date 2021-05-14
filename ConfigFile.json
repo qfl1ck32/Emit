@@ -14,5 +14,7 @@
   "COSINE_SimP1": 0.7,
   "COSINE_SimP2": 0.5,
   "EUCLIDEAN_SimP1": 1.8,
-  "EUCLIDEAN_SimP2": 1.5
+  "EUCLIDEAN_SimP2": 1.5,
+  "nameTreeFile": "recbktree.bkt",
+  "nameSearchMaxDist": 3
 }

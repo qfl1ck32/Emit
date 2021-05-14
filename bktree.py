@@ -1,4 +1,7 @@
 from random import shuffle
+from pickle import dumps, loads
+from multiprocessing import Lock
+
 
 class Node:
 
@@ -12,7 +15,30 @@ class Node:
 
 class BKtree:
 
+    classLock = Lock()
+
     # TODO: search cache implementation
+
+    @staticmethod
+    def save(tree, filename):
+
+        BKtree.classLock.acquire()
+
+        with open(filename, "wb") as f:
+            serialized = dumps(tree)
+            f.write(serialized)
+
+        BKtree.classLock.release()
+
+    @staticmethod
+    def load(filename):
+
+        BKtree.classLock.acquire()
+
+        with open(filename, "rb") as f:
+            serialized = f.read()
+            BKtree.classLock.release()
+            return loads(serialized)
 
     @staticmethod
     def LevenshteinDistance(fstStr, sndStr):
@@ -42,13 +68,18 @@ class BKtree:
 
         self.allNodes = {}  # {nume: nod, ...} - pentru stergere (marcare ca fiind sters) in timp constant
 
+        self.treeChangeLock = Lock()
+
     def insert(self, strToInsert, dbId):
+
+        self.treeChangeLock.acquire()
 
         if self.root is None:
 
             self.root = Node(strToInsert, dbId)
             self.allNodes.update({self.root.name: self.root})
 
+            self.treeChangeLock.release()
             return
 
         currentNode = self.root
@@ -62,6 +93,7 @@ class BKtree:
                 elif dbId not in currentNode.dbIds:
                     currentNode.dbIds.add(dbId)
 
+                self.treeChangeLock.release()
                 return
 
             d = self.distance(currentNode.name, strToInsert)
@@ -80,7 +112,10 @@ class BKtree:
 
                 self.allNodes.update({toInsert.name: toInsert})
 
+                self.treeChangeLock.release()
                 return
+
+        self.treeChangeLock.release()
 
     def search(self, strToSearch, maxDistance=3):
 
@@ -111,6 +146,8 @@ class BKtree:
 
     def delete(self, strToDelete, dbId):
 
+        self.treeChangeLock.acquire()
+
         if strToDelete in self.allNodes.keys():
             dbIds = self.allNodes[strToDelete].dbIds
 
@@ -119,6 +156,8 @@ class BKtree:
 
                 if not dbIds:
                     dbIds = None
+
+        self.treeChangeLock.release()
 
 
 def test_bktree():
@@ -163,11 +202,16 @@ def test_bktree():
     print(bktree.search("Grig", maxDistance=3))
     print(bktree.search("Iuia", maxDistance=2))
 
+    BKtree.save(bktree, "tree.bkt")
+    bktree2 = BKtree.load("tree.bkt")
+
+    print(bktree2.search("Calin", maxDistance=1))
+    print(bktree2.search("Mihail", maxDistance=2))
+    print(bktree2.search("Grig", maxDistance=3))
+    print(bktree2.search("Iuia", maxDistance=2))
+
 
 if __name__ == '__main__':
-
-    print(BKtree.LevenshteinDistance('Calin', 'Halin'))
-
     test_bktree()
 
 

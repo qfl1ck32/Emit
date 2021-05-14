@@ -6,6 +6,7 @@ import json
 from multiprocessing import Process, Lock
 
 import ioSystem
+from bktree import BKtree
 
 # sursa de invatare / documentatie pentru Funk MF: https://towardsdatascience.com/recommendation-system-matrix-factorization-d61978660b4b
 
@@ -348,9 +349,14 @@ class Recommender:
 
     def __init__(self, configFileName="ConfigFile.json"):
 
-        self.learner = None
-
         self.config = ioSystem.getConfigOpts(configFileName)
+
+        if self.config["nameTreeFile"] is None:
+            self.nameFinder = BKtree()
+        else:
+            self.nameFinder = BKtree.load(self.config["nameTreeFile"])
+
+        self.learner = None
 
         if self.config["matrixOption"] == 0:
 
@@ -522,6 +528,21 @@ class Recommender:
             for rec in M:
                 yield rec
 
+    # generator, cate o instanta pt fiecare proces de request
+    def findByName(self, nameToSearch):
+
+        while True:
+
+            found = self.nameFinder.search(nameToSearch, self.config["nameSearchMaxDist"])
+
+            if len(found) == 0:
+                yield None
+                break
+
+            for _, _, dbIds in found:
+                for dbId in dbIds:
+                    yield dbId
+
     def addNewUser(self, attributes):
 
         if isinstance(attributes, numpy.ndarray) is False:
@@ -545,8 +566,6 @@ class Recommender:
             attributes = numpy.array(attributes)
 
         self.learner.changeUser(userIndex, attributes)
-
-
 
     @staticmethod
     def test_getSimilarUsers():
@@ -655,11 +674,12 @@ class Recommender:
 
 
 if __name__ == "__main__":
+
     recommender = Recommender("ConfigFile.json")
 
-    #recommender.test_getSimilarUsers()
-    print('\n-------------------------\n')
-    recommender.test2_getSimilarUsersByattr()
+    # recommender.test_getSimilarUsers()
+    # print('\n-------------------------\n')
+    # recommender.test2_getSimilarUsersByattr()
 
 
 
