@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import path from 'path'
+import HTML from "react-native-render-html"
 
 dotenv.config({
     path: path.resolve(__dirname, 'env')
@@ -82,9 +83,6 @@ const checkEmailTaken = async (email: string) => {
 }
 
 
-
-
-
 app.post('/signup', async (req, res) => {
 
     const { username, email, password } = req.body
@@ -112,9 +110,43 @@ app.post('/signup', async (req, res) => {
             INSERT INTO email_not_verified
             VALUES (UNHEX(REPLACE(?, '-', '')), ?);`, [userUUID, verificationURL])
 
-        //
-        const emailResponse = await sendMail(email, 'Emit - Email confirmation', `
-        URL: ${IP}/verifyEmail?url=${verificationURL}`)
+        var url = `${IP}/verifyEmail?url=${verificationURL}`
+
+        var readHTMLFile = function(callback) {
+            fs.readFile("../frontEnd/src/emailConfirmationTemplate.html", {encoding: 'utf-8'}, function (err, html) {
+                if (err) {
+                    throw err;
+                    callback(err);
+                }
+                else {
+                    callback(null, html);
+                }
+            });
+        };
+        
+        var handlebars = require('handlebars');
+        var smtpTransport = require('nodemailer-smtp-transport');
+        var nodemailer = require('nodemailer');
+        var fs = require('fs');
+
+
+        var htmlToSend;
+        readHTMLFile(function(err, html) {
+            var template = handlebars.compile(html);
+            var replacements = {
+                 URL: url
+            };
+            htmlToSend = template(replacements);
+        
+             
+        });
+
+        const emailResponse = await sendMail(email, 'Emit - Email confirmation',  htmlToSend )
+
+        //TO DO : send html body - template for confirming
+       
+        
+        
     }
 
     catch (err) {
@@ -133,7 +165,23 @@ app.get('/verifyEmail', async (req, res) => {
         WHERE URL = ?`, [URL])
 
     if (!response.length) {
-        //
+        //TO DO : show an error page
+
+        var http = require('http'),
+        fs = require('fs');
+
+
+        fs.readFile('../frontEnd/src/errorConfirmation.html', function (err, html) {
+            if (err) {
+                throw err; 
+            }       
+            http.createServer(function(request, response) {  
+                response.writeHeader(200, {"Content-Type": "text/html"});  
+                response.write(html);  
+                response.end();  
+            }).listen(8000);
+        });
+        
         return res.sendStatus(403)
     }
 
@@ -142,7 +190,25 @@ app.get('/verifyEmail', async (req, res) => {
         FROM email_not_verified
         WHERE ID = UNHEX(?);`, [response[0].ID])
 
-    //
+    //TO DO : show a page with smiley face for succesfull log in
+    var http = require('http'),
+        fs = require('fs');
+
+
+        fs.readFile('../frontEnd/src/succesConfirmation.html', function (err, html) {
+            if (err) {
+                throw err; 
+            }       
+            http.createServer(function(request, response) {  
+                response.writeHeader(200, {"Content-Type": "text/html"});  
+                response.write(html);  
+                response.end();  
+            }).listen(8000);
+        });
+        
+
+
+
     return res.sendStatus(200)
 })
 
