@@ -1,12 +1,15 @@
 import dotenv from 'dotenv'
+import path from 'path'
 
 import express from 'express'
 
-dotenv.config()
+dotenv.config({
+    path: path.resolve(__dirname, 'env')
+})
 
 const 
     app = express(),
-    port = 8080
+    port = 8082
 
 app.use(express.json())
 app.use(express.urlencoded({
