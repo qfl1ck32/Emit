@@ -16,10 +16,14 @@ import mysqlConnection from './MySQLConnection'
 
 import emailHandler from './EmailHandler'
 
+import fs from 'fs'
+
 import { 
     verifyAccessToken, verifyRefreshToken, logoutToken,
     generateAccessToken, generateRefreshToken
         } from './authHelpers'
+
+import { compile } from 'handlebars'
 
 const 
     app = express(),
@@ -27,7 +31,7 @@ const
     sendQuery = mysqlConnection.getInstance().sendQuery,
     sendMail = emailHandler.getInstance().sendMail,
 
-    IP = `http://192.168.100.34:${port}`
+    IP = require('../frontEnd/src/APIs/IPs/authServerIP.json')
 
 
 app.use(express.json())
@@ -82,9 +86,6 @@ const checkEmailTaken = async (email: string) => {
 }
 
 
-
-
-
 app.post('/signup', async (req, res) => {
 
     const { username, email, password } = req.body
@@ -112,9 +113,28 @@ app.post('/signup', async (req, res) => {
             INSERT INTO email_not_verified
             VALUES (UNHEX(REPLACE(?, '-', '')), ?);`, [userUUID, verificationURL])
 
-        //
-        const emailResponse = await sendMail(email, 'Emit - Email confirmation', `
-        URL: ${IP}/verifyEmail?url=${verificationURL}`)
+        await sendQuery(`
+            INSERT INTO no_initial_setup
+            VALUES (UNHEX(REPLACE(?, '-', '')));
+        `, [userUUID])
+
+        var url = `${IP}/verifyEmail?url=${verificationURL}`
+
+        const templateFile = fs.readFileSync("../frontEnd/src/emailConfirmationTemplate.html", { encoding: 'utf-8' })
+
+        const template = compile(templateFile)
+
+        const data = {
+            URL: url
+        }
+
+        const HTML = template(data)
+
+        await sendMail(email, 'Emit - Email confirmation',  HTML, [{
+            filename: 'logo.png',
+            path: '../frontEnd/src/assets/images/emit_mail_logo.png',
+            cid: 'logo'
+        }])
     }
 
     catch (err) {
@@ -133,8 +153,9 @@ app.get('/verifyEmail', async (req, res) => {
         WHERE URL = ?`, [URL])
 
     if (!response.length) {
-        //
-        return res.sendStatus(403)
+        const templateFile = fs.readFileSync('../frontEnd/src/emailConfirmationNotFound.html', { encoding: 'utf-8' })
+
+        return res.send(templateFile)
     }
 
     const remove = await sendQuery(`
@@ -142,8 +163,9 @@ app.get('/verifyEmail', async (req, res) => {
         FROM email_not_verified
         WHERE ID = UNHEX(?);`, [response[0].ID])
 
-    //
-    return res.sendStatus(200)
+    const templateFile = fs.readFileSync('../frontEnd/src/emailConfirmationSuccess.html', { encoding: 'utf-8' })
+
+    return res.send(templateFile)
 })
 
 app.post('/signin', async (req, res) => {
@@ -158,10 +180,12 @@ app.post('/signin', async (req, res) => {
     if (!response.length)
         return res.json(error('Username not existent.'))
 
+    const ID = response[0].ID
+
     const emailVerification = await sendQuery(`
-        SELECT COUNT(ID) as isNotVerified
+        SELECT COUNT(ID) AS isNotVerified
         FROM email_not_verified
-        WHERE ID = UNHEX(?)`, [response[0].ID])
+        WHERE ID = UNHEX(?);`, [ID])
 
     if (emailVerification[0].isNotVerified)
         return res.json(error('Your e-mail has not yet been verified. Please check your inbox.'))
@@ -173,6 +197,12 @@ app.post('/signin', async (req, res) => {
     if (!checkEqualPasswords)
         return res.json(error('Wrong password.'))
 
+    const setUpVerification = await sendQuery(`
+        SELECT 1 - COUNT(ID) AS isSetUp
+        FROM no_initial_setup
+        WHERE ID = UNHEX(?);
+    `, [ID])
+
     const userData = {
         username
     }
@@ -182,7 +212,8 @@ app.post('/signin', async (req, res) => {
 
     return res.json(success({
         accessToken,
-        refreshToken
+        refreshToken,
+        isSetUp: !!setUpVerification[0].isSetUp
     }))
 })
 

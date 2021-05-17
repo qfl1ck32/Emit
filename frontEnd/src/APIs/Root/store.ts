@@ -2,12 +2,13 @@ import { createStore } from 'redux'
 import ActionType from './ActionType'
 
 export interface ReducerState {
-    isLoading: boolean,
-    isSignout: boolean,
-    userTokens: null | {
+    isLoading?: boolean,
+    isSignout?: boolean,
+    userTokens?: null | {
       accessToken: string,
       refreshToken: string
-    }
+    },
+    isSetUp?: boolean
 }
   
 type ReducerAction = {
@@ -15,16 +16,18 @@ type ReducerAction = {
     tokens: null | {
       accessToken: string,
       refreshToken?: string
-    }
+    },
+    isSetUp?: boolean
 }
   
 const initialState: ReducerState = {
     isLoading: true,
     isSignout: false,
-    userTokens: null
+    userTokens: null,
+    isSetUp: false
 }
 
-const reducer = (prevState, action: ReducerAction): ReducerState => {
+const reducer = (prevState: any, action: ReducerAction): ReducerState => {
     switch(action.type) {
         case ActionType.RESTORE_TOKENS:
             return {
@@ -37,6 +40,7 @@ const reducer = (prevState, action: ReducerAction): ReducerState => {
             return {
                 ...prevState,
                 userTokens: action.tokens,
+                isSetUp: action.isSetUp
             }
 
         case ActionType.SIGN_OUT:

@@ -9,7 +9,7 @@ import * as SecureStore from 'expo-secure-store'
 
 import { connect, Provider } from 'react-redux'
 
-import rootStore from './src/APIs/Root/store'
+import rootStore, { ReducerState } from './src/APIs/Root/store'
 
 import ActionType from './src/APIs/Root/ActionType'
 
@@ -39,15 +39,20 @@ const App = () => {
 
   return (
     <Provider store = { rootStore }>
-      <Root />
+      <Root  />
     </Provider>
   )
 }
 
-const RootNavigation = (props: any) => {
-  return props.isLoading ? null : (
+const RootNavigation = (props: ReducerState) => {
+
+  if (props.isLoading)
+    return null
+  
+  return (
     <NavigationContainer>
       {
+        
         props.userTokens === null ?
           <RootStackScreen />
         : 

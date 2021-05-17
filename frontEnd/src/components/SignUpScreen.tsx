@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 
 import { useDebouncedCallback } from 'use-debounce'
 
-import { useForm } from 'react-hook-form'
+import { FieldValues, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
@@ -34,8 +34,8 @@ import { signUp } from '../APIs/Root/signUp'
 const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
 
     const schema = yup.object().shape({
-        username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(32, 'Should be at most 32 characters long.'),
-        email: yup.string().required('This field is required.').email('Invalid e-mail.').max(32, 'Should be at most 32 characters long.'),
+        username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(64, 'Should be at most 64 characters long.'),
+        email: yup.string().required('This field is required.').email('Invalid e-mail.').max(64, 'Should be at most 64 characters long.'),
 
         password: yup.string().required('This field is required.').min(8, 'Should be at least 8 characters long.'),
         confirmPassword: yup.string().required('This field is required.').oneOf([yup.ref('password'), null], 'Passwords do not match.')
@@ -94,7 +94,7 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
         handleSubmit(onSubmit)()
     }
 
-    const onSubmit = async (values: object) => {
+    const onSubmit = async (values: FieldValues) => {
 
         const checkUsername = await validate('username')
         const checkEmail = await validate('email')
@@ -204,12 +204,12 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
 
                     onPressFeather = { switchShowingConfirmPassword }
 
-                    { ... formProps}
+                    { ...formProps }
 
                     marginBottom
                 />
 
-                <PasswordStrengthMeter password = { watch('password') || watch('confirmPassword') } />
+                {/* <PasswordStrengthMeter password = { watch('password') || watch('confirmPassword') } /> */}
 
                 <View style = { styles.button }>
                     <TouchableOpacity style = { styles.signIn } onPress = { onSubmitPress }>

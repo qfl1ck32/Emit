@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import Mail from 'nodemailer/lib/mailer';
+import Mail, { Attachment } from 'nodemailer/lib/mailer';
 
 export default class EmailHandler {
     private transporter: Mail;
@@ -14,6 +14,7 @@ export default class EmailHandler {
     }
 
     private constructor() {
+
         this.transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 587,
@@ -26,21 +27,18 @@ export default class EmailHandler {
         })
     }
 
-    public sendMail = async (to: string, subject: string, html: string) => {
+    public sendMail = async (to: string, subject: string, html: string, attachments: Attachment[] = []) => {
         try {
             const ans = await this.transporter.sendMail({
                 to,
                 subject,
-                html
+                html,
+                attachments
             })
-
-            console.log(ans)
-
-            return true
         }
 
         catch (err) {
-            return false;
+            throw new Error('Couldn\'t send e-mail: ' + err)
         }
     }
 }

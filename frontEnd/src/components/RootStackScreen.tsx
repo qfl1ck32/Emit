@@ -17,7 +17,7 @@ export type RootStackParamList = {
     SignUpScreen: undefined
 }
 
-export type NavigationProps <T> = StackScreenProps <RootStackParamList, T>
+export type NavigationProps <T extends keyof RootStackParamList> = StackScreenProps <RootStackParamList, T>
 
 const RootStack = createStackNavigator <RootStackParamList> ()
 
