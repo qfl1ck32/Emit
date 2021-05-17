@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialIcons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { MaterialIcons } from '@expo/vector-icons'
 
 import HomeScreen from './HomeScreen'
 import SettingsScreen from './SettingsScreen'
