@@ -9,8 +9,8 @@ import express from 'express'
 import RedisConnection from './RedisConnection'
 
 const   client = RedisConnection.getInstance().getClient(),
-        redisAccessTokenExpiration  = 3,
-        redisRefreshTokenExpiration = 15,
+        redisAccessTokenExpiration  = 60,
+        redisRefreshTokenExpiration = 3600,
 
         accessTokenExpiration = redisAccessTokenExpiration.toString() + 's',
         refreshTokenExpiration = redisRefreshTokenExpiration.toString() + 's'

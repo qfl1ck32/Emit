@@ -3,7 +3,7 @@ import React from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 
 import RootStackScreen from './src/components/RootStackScreen'
-import HomeScreen from './src/components/HomeScreen'
+import MainTabScreen from './src/components/MainTabScreen'
 
 import * as SecureStore from 'expo-secure-store'
 
@@ -51,7 +51,7 @@ const RootNavigation = (props: any) => {
         props.userTokens === null ?
           <RootStackScreen />
         : 
-          <HomeScreen />
+          <MainTabScreen />
       }
     </NavigationContainer>
   )
