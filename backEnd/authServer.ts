@@ -113,6 +113,11 @@ app.post('/signup', async (req, res) => {
             INSERT INTO email_not_verified
             VALUES (UNHEX(REPLACE(?, '-', '')), ?);`, [userUUID, verificationURL])
 
+        await sendQuery(`
+            INSERT INTO no_initial_setup
+            VALUES (UNHEX(REPLACE(?, '-', '')));
+        `, [userUUID])
+
         var url = `${IP}/verifyEmail?url=${verificationURL}`
 
         const templateFile = fs.readFileSync("../frontEnd/src/emailConfirmationTemplate.html", { encoding: 'utf-8' })
@@ -175,10 +180,12 @@ app.post('/signin', async (req, res) => {
     if (!response.length)
         return res.json(error('Username not existent.'))
 
+    const ID = response[0].ID
+
     const emailVerification = await sendQuery(`
-        SELECT COUNT(ID) as isNotVerified
+        SELECT COUNT(ID) AS isNotVerified
         FROM email_not_verified
-        WHERE ID = UNHEX(?)`, [response[0].ID])
+        WHERE ID = UNHEX(?);`, [ID])
 
     if (emailVerification[0].isNotVerified)
         return res.json(error('Your e-mail has not yet been verified. Please check your inbox.'))
@@ -190,6 +197,12 @@ app.post('/signin', async (req, res) => {
     if (!checkEqualPasswords)
         return res.json(error('Wrong password.'))
 
+    const setUpVerification = await sendQuery(`
+        SELECT 1 - COUNT(ID) AS isSetUp
+        FROM no_initial_setup
+        WHERE ID = UNHEX(?);
+    `, [ID])
+
     const userData = {
         username
     }
@@ -199,7 +212,8 @@ app.post('/signin', async (req, res) => {
 
     return res.json(success({
         accessToken,
-        refreshToken
+        refreshToken,
+        isSetUp: !!setUpVerification[0].isSetUp
     }))
 })
 
