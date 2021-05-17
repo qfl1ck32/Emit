@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 
 import { useDebouncedCallback } from 'use-debounce'
 
-import { useForm } from 'react-hook-form'
+import { FieldValues, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
@@ -94,7 +94,7 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
         handleSubmit(onSubmit)()
     }
 
-    const onSubmit = async (values: object) => {
+    const onSubmit = async (values: FieldValues) => {
 
         const checkUsername = await validate('username')
         const checkEmail = await validate('email')
@@ -204,12 +204,12 @@ const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
 
                     onPressFeather = { switchShowingConfirmPassword }
 
-                    { ... formProps}
+                    { ...formProps }
 
                     marginBottom
                 />
 
-                <PasswordStrengthMeter password = { watch('password') || watch('confirmPassword') } />
+                {/* <PasswordStrengthMeter password = { watch('password') || watch('confirmPassword') } /> */}
 
                 <View style = { styles.button }>
                     <TouchableOpacity style = { styles.signIn } onPress = { onSubmitPress }>

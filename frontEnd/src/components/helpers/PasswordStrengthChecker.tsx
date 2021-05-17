@@ -1,7 +1,7 @@
 export default class PasswordStrengthChecker {
     private static instance: PasswordStrengthChecker
 
-    private progressToColorAndMessage: object
+    private progressToColorAndMessage: object[]
 
     private oneLowerCase: RegExp
     private oneUpperCase: RegExp
@@ -18,15 +18,13 @@ export default class PasswordStrengthChecker {
 
 
     private constructor() {
-        this.progressToColorAndMessage = {}
-
         this.oneLowerCase = new RegExp('^(?=.*[a-z])')
         this.oneUpperCase = new RegExp('^(?=.*[A-Z])')
         this.oneNumber = new RegExp('^(?=.*[0-9])')
         this.oneSpecialCharacter = new RegExp('(?=.*[!@#$%^&*,.()])')
         this.atLeast8Characters = new RegExp('(?=.{8,})')
 
-        this.progressToColorAndMessage = {
+        this.progressToColorAndMessage = Object.assign({
             0: {
                 color: 'lightgreen',
                 message: ''
@@ -56,7 +54,7 @@ export default class PasswordStrengthChecker {
                 color: 'green',
                 message: 'Strong'
             }
-        }
+        })
     }
 
     private checkAll = (text: string): number => {

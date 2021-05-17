@@ -12,7 +12,9 @@ import { LinearGradient } from 'expo-linear-gradient'
 import * as Animatable from 'react-native-animatable'
 import { MaterialIcons } from '@expo/vector-icons'
 
-const SplashScreen = ( { navigation:  { navigate } } ) => {
+import { NavigationProps } from './RootStackScreen'
+
+const SplashScreen = ( { navigation }: NavigationProps <'SplashScreen'> ) => {
     return (
         <View style = { styles.container }>
             <View style = { styles.header }>
@@ -27,11 +29,11 @@ const SplashScreen = ( { navigation:  { navigate } } ) => {
 
             <Animatable.View style = { styles.footer } animation = 'fadeInUpBig' duration = { 500 }>
                 <Text style = { [styles.text, styles.largerText] }>
-                    Get started
+                    Get started!
                 </Text>
 
                 <View style = { styles.button }>
-                    <TouchableOpacity onPress = { () => navigate('LoginScreen') }>
+                    <TouchableOpacity onPress = { () => navigation.navigate('LoginScreen') }>
                         <LinearGradient colors = { ['#3187be', '#0d5d90'] }  style = { styles.signIn }>
                             <Text style = { styles.text }>
                                 Log in
@@ -42,7 +44,7 @@ const SplashScreen = ( { navigation:  { navigate } } ) => {
                 </View>
 
                 <View style = { styles.button }>
-                    <TouchableOpacity onPress = { () => navigate('SignUpScreen') }>
+                    <TouchableOpacity onPress = { () => navigation.navigate('SignUpScreen') }>
                         <LinearGradient colors = { ['#3187be', '#0d5d90'] }  style = { styles.signIn }>
                             <Text style = { styles.text }>
                                 Sign up

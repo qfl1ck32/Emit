@@ -24,7 +24,7 @@ const initialState: ReducerState = {
     userTokens: null
 }
 
-const reducer = (prevState, action: ReducerAction): ReducerState => {
+const reducer = (prevState: any, action: ReducerAction): ReducerState => {
     switch(action.type) {
         case ActionType.RESTORE_TOKENS:
             return {

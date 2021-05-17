@@ -14,7 +14,7 @@ import StyledInputWithController from './StyledInputWIthController'
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
 
-import { useForm } from 'react-hook-form'
+import { FieldValues, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
@@ -44,7 +44,7 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
         handleSubmit(onSubmit)()
     }
 
-    const onSubmit = async (values: object) => {
+    const onSubmit = async (values: FieldValues) => {
 
         const trySign = await signIn(values['username'], values['password'])
 
