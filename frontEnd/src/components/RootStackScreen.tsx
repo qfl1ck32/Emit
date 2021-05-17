@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { createStackNavigator, StackScreenProps } from '@react-navigation/stack'
+import { NavigationContainer } from '@react-navigation/native'
 
 import SplashScreen from './SplashScreen'
 import LoginScreen from './LoginScreen'
@@ -23,13 +24,15 @@ const RootStack = createStackNavigator <RootStackParamList> ()
 
 const RootStackScreen: React.FC <{}> = () => {
     return (
-        <RootStack.Navigator headerMode = 'none'>
-            <RootStack.Screen name = 'SplashScreen' component = { SplashScreen } />
+        <NavigationContainer>
+            <RootStack.Navigator headerMode = 'none'>
+                <RootStack.Screen name = 'SplashScreen' component = { SplashScreen } />
 
-            <RootStack.Screen name = 'LoginScreen' component = { LoginScreen } />
+                <RootStack.Screen name = 'LoginScreen' component = { LoginScreen } />
 
-            <RootStack.Screen name = 'SignUpScreen' component = { SignUpScreen } />
-        </RootStack.Navigator>
+                <RootStack.Screen name = 'SignUpScreen' component = { SignUpScreen } />
+            </RootStack.Navigator>
+        </NavigationContainer>
     )
 }
 
