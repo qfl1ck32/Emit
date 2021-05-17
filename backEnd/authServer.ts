@@ -1,6 +1,5 @@
 import dotenv from 'dotenv'
 import path from 'path'
-import HTML from "react-native-render-html"
 
 dotenv.config({
     path: path.resolve(__dirname, 'env')
@@ -17,10 +16,14 @@ import mysqlConnection from './MySQLConnection'
 
 import emailHandler from './EmailHandler'
 
+import fs from 'fs'
+
 import { 
     verifyAccessToken, verifyRefreshToken, logoutToken,
     generateAccessToken, generateRefreshToken
         } from './authHelpers'
+
+import { compile } from 'handlebars'
 
 const 
     app = express(),
@@ -28,7 +31,7 @@ const
     sendQuery = mysqlConnection.getInstance().sendQuery,
     sendMail = emailHandler.getInstance().sendMail,
 
-    IP = `http://192.168.100.34:${port}`
+    IP = require('../frontEnd/src/APIs/IPs/authServerIP.json')
 
 
 app.use(express.json())
@@ -112,41 +115,21 @@ app.post('/signup', async (req, res) => {
 
         var url = `${IP}/verifyEmail?url=${verificationURL}`
 
-        var readHTMLFile = function(callback) {
-            fs.readFile("../frontEnd/src/emailConfirmationTemplate.html", {encoding: 'utf-8'}, function (err, html) {
-                if (err) {
-                    throw err;
-                    callback(err);
-                }
-                else {
-                    callback(null, html);
-                }
-            });
-        };
-        
-        var handlebars = require('handlebars');
-        var smtpTransport = require('nodemailer-smtp-transport');
-        var nodemailer = require('nodemailer');
-        var fs = require('fs');
+        const templateFile = fs.readFileSync("../frontEnd/src/emailConfirmationTemplate.html", { encoding: 'utf-8' })
 
+        const template = compile(templateFile)
 
-        var htmlToSend;
-        readHTMLFile(function(err, html) {
-            var template = handlebars.compile(html);
-            var replacements = {
-                 URL: url
-            };
-            htmlToSend = template(replacements);
-        
-             
-        });
+        const data = {
+            URL: url
+        }
 
-        const emailResponse = await sendMail(email, 'Emit - Email confirmation',  htmlToSend )
+        const HTML = template(data)
 
-        //TO DO : send html body - template for confirming
-       
-        
-        
+        await sendMail(email, 'Emit - Email confirmation',  HTML, [{
+            filename: 'logo.png',
+            path: '../frontEnd/src/assets/images/emit_mail_logo.png',
+            cid: 'logo'
+        }])
     }
 
     catch (err) {
@@ -165,24 +148,9 @@ app.get('/verifyEmail', async (req, res) => {
         WHERE URL = ?`, [URL])
 
     if (!response.length) {
-        //TO DO : show an error page
+        const templateFile = fs.readFileSync('../frontEnd/src/emailConfirmationNotFound.html', { encoding: 'utf-8' })
 
-        var http = require('http'),
-        fs = require('fs');
-
-
-        fs.readFile('../frontEnd/src/errorConfirmation.html', function (err, html) {
-            if (err) {
-                throw err; 
-            }       
-            http.createServer(function(request, response) {  
-                response.writeHeader(200, {"Content-Type": "text/html"});  
-                response.write(html);  
-                response.end();  
-            }).listen(8000);
-        });
-        
-        return res.sendStatus(403)
+        return res.send(templateFile)
     }
 
     const remove = await sendQuery(`
@@ -190,26 +158,9 @@ app.get('/verifyEmail', async (req, res) => {
         FROM email_not_verified
         WHERE ID = UNHEX(?);`, [response[0].ID])
 
-    //TO DO : show a page with smiley face for succesfull log in
-    var http = require('http'),
-        fs = require('fs');
+    const templateFile = fs.readFileSync('../frontEnd/src/emailConfirmationSuccess.html', { encoding: 'utf-8' })
 
-
-        fs.readFile('../frontEnd/src/succesConfirmation.html', function (err, html) {
-            if (err) {
-                throw err; 
-            }       
-            http.createServer(function(request, response) {  
-                response.writeHeader(200, {"Content-Type": "text/html"});  
-                response.write(html);  
-                response.end();  
-            }).listen(8000);
-        });
-        
-
-
-
-    return res.sendStatus(200)
+    return res.send(templateFile)
 })
 
 app.post('/signin', async (req, res) => {

@@ -35,12 +35,10 @@ export default class EmailHandler {
                 html,
                 attachments
             })
-
-            return true
         }
 
         catch (err) {
-            return false;
+            throw new Error('Couldn\'t send e-mail: ' + err)
         }
     }
 }
