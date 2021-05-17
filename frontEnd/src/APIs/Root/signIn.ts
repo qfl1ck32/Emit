@@ -19,7 +19,13 @@ const signIn = async (username: string, password: string) => {
   
     rootStore.dispatch({
         type: ActionType.SIGN_IN,
-        tokens: response.data.message
+
+        tokens: {
+          accessToken,
+          refreshToken
+        },
+
+        isSetUp: response.data.message.isSetUp
     })
 }
 
