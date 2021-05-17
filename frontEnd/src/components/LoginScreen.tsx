@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 import {
     StyleSheet,
@@ -67,6 +67,12 @@ const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) 
     const values = getValues()
 
     const formProps = { errors, control, dirtyFields, values, touchedFields }
+
+    // autocomplete login for development purposes
+    useEffect(() => {
+        setValue('username', 'qfl1ck32')
+        setValue('password', 'ABABABAB')
+    }, [])
 
     return (
         <View style = { styles.container }>
