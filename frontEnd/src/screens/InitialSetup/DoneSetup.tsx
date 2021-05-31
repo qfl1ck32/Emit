@@ -1,6 +1,6 @@
 import React from 'react'
-import { SetupNavigationProps } from './index'
-import store from './store'
+import { SetupNavigationProps } from './interfaces'
+import { store } from './store'
 
 import { View, Text } from 'react-native'
 

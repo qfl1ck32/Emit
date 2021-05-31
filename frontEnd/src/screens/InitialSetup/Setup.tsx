@@ -1,21 +1,18 @@
-import React, { useState } from 'react'
+import React from 'react'
 
-import { createStackNavigator, StackScreenProps } from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
 import { NavigationContainer } from '@react-navigation/native'
 
 import { View, Button } from 'react-native'
 
-import { SetupName, SetupPicture, DoneSetup } from './index'
-
-export type SetupStackParamList = {
-    SetupName: undefined,
-    SetupPicture: undefined,
-    DoneSetup: undefined
-}
+import { SetupName } from './SetupName'
+import { SetupPicture } from './SetupPicture'
+import { SetupHobbies } from './SetupHobbies'
+import { DoneSetup } from './DoneSetup'
 
 import signOut from '../../APIs/Root/signOut'
 
-export type SetupNavigationProps <T extends keyof SetupStackParamList> = StackScreenProps <SetupStackParamList, T>
+import { SetupStackParamList } from './interfaces'
 
 const SetupStack = createStackNavigator <SetupStackParamList> ()
 
@@ -37,6 +34,7 @@ export const Setup: React.FC <{}> = () => {
 
                 <SetupStack.Screen name = 'SetupName' component = { SetupName } />
                 <SetupStack.Screen name = 'SetupPicture' component = { SetupPicture } />
+                <SetupStack.Screen name = 'SetupHobbies' component = { SetupHobbies } />
                 <SetupStack.Screen name = 'DoneSetup' component = { DoneSetup } />
 
             </SetupStack.Navigator>

@@ -2,7 +2,10 @@ import React, { useEffect } from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { MaterialIcons } from '@expo/vector-icons'
 
-import { Home, Settings, Emit, Profile } from '../index'
+import { Home } from '../Home'
+import { Emit } from '../Emit'
+import { Profile } from '../Profile'
+import { Settings } from '../Settings'
 
 import { NavigationContainer } from '@react-navigation/native'
 

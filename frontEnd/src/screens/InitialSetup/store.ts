@@ -1,5 +1,5 @@
 import { createStore } from 'redux'
-import ActionType from './ActionType'
+import { ActionType } from './ActionType'
 
 export interface ReducerState {
     name: String,
@@ -10,7 +10,8 @@ export type ReducerAction = {
     type: ActionType,
 
     name?: String,
-    picture?: String
+    picture?: String,
+    hobbies?: string[]
 }
 
 const initialState: ReducerState = {

@@ -8,7 +8,9 @@ const duck = require('../../assets/images/duck.jpg')
 
 import * as ImagePicker from 'expo-image-picker'
 
-import { store, ActionType, SetupNavigationProps } from './'
+import { store } from './store'
+import { SetupNavigationProps } from './interfaces'
+import { ActionType } from './ActionType'
 
 export const SetupPicture = ({ navigation }: SetupNavigationProps <'SetupPicture'>) => {
 

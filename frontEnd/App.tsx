@@ -1,6 +1,8 @@
 import React from 'react'
 
-import { Root, Setup, MainTab } from './src/screens'
+import { Root } from './src/screens/Root'
+import { Setup } from './src/screens/InitialSetup/Setup'
+import { MainTab } from './src/screens/MainTab'
 
 import * as SecureStore from 'expo-secure-store'
 

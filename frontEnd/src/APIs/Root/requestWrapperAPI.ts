@@ -26,7 +26,7 @@ const axiosRequest = (type: RequestType) => {
     }
 }
 
-const withAutoResend = async (type: RequestType, url: string, data?: any, config?: AxiosRequestConfig | undefined): Promise <AxiosResponse <any> | void>  => {
+export const withAutoResend = async (type: RequestType, url: string, data?: any, config?: AxiosRequestConfig | undefined): Promise <AxiosResponse <any> | void>  => {
     const state = rootStore.getState()
 
     const accessToken = state.userTokens?.accessToken

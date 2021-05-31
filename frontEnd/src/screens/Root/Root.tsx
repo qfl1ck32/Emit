@@ -1,22 +1,13 @@
 import React from 'react'
 
-import { createStackNavigator, StackScreenProps } from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
 import { NavigationContainer } from '@react-navigation/native'
 
-import { Splash, Login, SignUp } from '../index'
+import { RootStackParamList } from './interfaces'
 
-export type RootStackParamList = {
-    SplashScreen: undefined,
-
-    LoginScreen: {
-        username?: any,
-        password?: any
-    } | undefined,
-
-    SignUpScreen: undefined
-}
-
-export type RootNavigationProps <T extends keyof RootStackParamList> = StackScreenProps <RootStackParamList, T>
+import { Splash } from '../Splash'
+import { Login } from '../Login'
+import { SignUp } from '../SignUp'
 
 const RootStack = createStackNavigator <RootStackParamList> ()
 

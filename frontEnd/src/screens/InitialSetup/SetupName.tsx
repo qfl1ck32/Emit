@@ -8,9 +8,11 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import { useForm } from 'react-hook-form'
 
-import { StyledInputWithController } from '../../components'
+import { StyledInputWithController } from '../../components/StyledInputWithController'
 
-import { store, ActionType, SetupNavigationProps } from './'
+import { store } from './store'
+import { SetupNavigationProps } from './interfaces'
+import { ActionType } from './ActionType'
 
 export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
     const schema = yup.object().shape({
@@ -29,7 +31,7 @@ export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) =>
                 name: getValues()['name']
             })
             
-            navigation.navigate('SetupPicture')
+            navigation.navigate('SetupHobbies')
         })()
     }
 

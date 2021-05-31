@@ -9,7 +9,7 @@ import {
     Alert
 } from 'react-native'
 
-import { StyledInputWithController } from '../../components/'
+import { StyledInputWithController } from '../../components/StyledInputWithController'
 
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -18,7 +18,7 @@ import { FieldValues, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import { RootNavigationProps } from '../Root'
+import { RootNavigationProps } from '../Root/interfaces'
 
 import signIn from '../../APIs/Root/signIn'
 
