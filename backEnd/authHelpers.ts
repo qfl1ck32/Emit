@@ -82,6 +82,9 @@ export const logoutToken = async (req: express.Request, res: express.Response) =
 }
 
 export const verifyAccessToken = async (req: express.Request, res: express.Response, next: Function) => {
+    if (!req.headers['authorization'])
+        return res.sendStatus(403)
+    
     const authTokens = req.headers['authorization'].split(' ')
 
     if (authTokens[1] == 'null')
