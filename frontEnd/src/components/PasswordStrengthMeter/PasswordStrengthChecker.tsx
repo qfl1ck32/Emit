@@ -1,4 +1,4 @@
-export default class PasswordStrengthChecker {
+export class PasswordStrengthChecker {
     private static instance: PasswordStrengthChecker
 
     private progressToColorAndMessage: object[]

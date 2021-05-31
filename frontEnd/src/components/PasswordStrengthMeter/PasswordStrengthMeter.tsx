@@ -3,7 +3,7 @@ import React from 'react'
 import { ProgressBar } from 'react-native-paper'
 import { View, Text, StyleSheet } from 'react-native'
 
-import PasswordStrengthChecker from './helpers/PasswordStrengthChecker'
+import { PasswordStrengthChecker } from './PasswordStrengthChecker'
 
 interface Props {
     password: string
@@ -16,7 +16,7 @@ interface State {
 }
 
 
-class PasswordStrengthMeter extends React.PureComponent <Props, State> {
+export class PasswordStrengthMeter extends React.PureComponent <Props, State> {
 
     constructor(props: Props) {
         super(props),
@@ -51,6 +51,3 @@ const styles = StyleSheet.create({
         textAlign: 'right'
     }
 })
-
-
-export default PasswordStrengthMeter

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 
 import {
     StyleSheet,
@@ -9,7 +9,7 @@ import {
     Alert
 } from 'react-native'
 
-import StyledInputWithController from './StyledInputWIthController'
+import { StyledInputWithController } from '../../components/'
 
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -18,11 +18,11 @@ import { FieldValues, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import { NavigationProps } from './RootStackScreen'
+import { RootNavigationProps } from '../Root'
 
-import signIn from '../APIs/Root/signIn'
+import signIn from '../../APIs/Root/signIn'
 
-const LoginScreen = ( { navigation, route } : NavigationProps <'LoginScreen'> ) => {
+export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen'> ) => {
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.'),
@@ -198,6 +198,3 @@ const styles = StyleSheet.create({
         marginTop: 15
     }
 })
-
-
-export default LoginScreen

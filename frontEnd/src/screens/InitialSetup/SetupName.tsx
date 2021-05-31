@@ -2,17 +2,17 @@ import React from 'react'
 
 import { View, Text, Button, StyleSheet } from 'react-native'
 
-import { NavigationProps } from '../SetupStackScreen'
-
 import * as Animatable from 'react-native-animatable'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { useForm } from 'react-hook-form'
 
-import StyledInputWithController from '../StyledInputWIthController'
+import { StyledInputWithController } from '../../components'
 
-const SetupName = ({ navigation }: NavigationProps <'SetupName'>) => {
+import { store, ActionType, SetupNavigationProps } from './'
+
+export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
     const schema = yup.object().shape({
         name: yup.string().required('This field is required.')
     })
@@ -23,7 +23,14 @@ const SetupName = ({ navigation }: NavigationProps <'SetupName'>) => {
     })
 
     const onSubmitPress = () => {
-        handleSubmit(() => navigation.navigate('SetupPicture'))()
+        handleSubmit(() => {
+            store.dispatch({
+                type: ActionType.SET_NAME,
+                name: getValues()['name']
+            })
+            
+            navigation.navigate('SetupPicture')
+        })()
     }
 
     const values = getValues()
@@ -46,6 +53,9 @@ const SetupName = ({ navigation }: NavigationProps <'SetupName'>) => {
                     placeholder = 'Mark'
 
                     iconName = 'user'
+                    color = '#FFFFFF'
+
+                    errorColor = '#FFFFFF'
 
                     { ...formProps }
                 />
@@ -86,8 +96,8 @@ const styles = StyleSheet.create({
     },
 
     button: {
+        width: '50%',
+        left: 100,
         marginTop: 25   
     }
 })
-
-export default SetupName

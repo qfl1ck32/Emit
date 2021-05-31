@@ -2,16 +2,13 @@ import React, { useEffect } from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { MaterialIcons } from '@expo/vector-icons'
 
-import HomeScreen from './HomeScreen'
-import SettingsScreen from './SettingsScreen'
-import EmitScreen from './EmitScreen'
-import ProfileScreen from './ProfileScreen'
+import { Home, Settings, Emit, Profile } from '../index'
 
 import { NavigationContainer } from '@react-navigation/native'
 
 const Tab = createBottomTabNavigator()
 
-const MainTabScreen: React.FC <{}> = () => {
+export const MainTab: React.FC <{}> = () => {
 
     useEffect(() => {
         console.log('ceva');
@@ -27,7 +24,7 @@ const MainTabScreen: React.FC <{}> = () => {
             >
                 <Tab.Screen
                     name="Home"
-                    component={ HomeScreen }
+                    component={ Home }
                     options={{
                         tabBarLabel: 'Home',
                         tabBarIcon: ({ color, size }) => (
@@ -37,7 +34,7 @@ const MainTabScreen: React.FC <{}> = () => {
                 />
                 <Tab.Screen
                     name="Emit"
-                    component={ EmitScreen }
+                    component={ Emit }
                     options={{
                         tabBarLabel: 'Emit',
                         tabBarIcon: ({ color, size }) => (
@@ -47,7 +44,7 @@ const MainTabScreen: React.FC <{}> = () => {
                 />
                 <Tab.Screen
                     name="Profile"
-                    component={ ProfileScreen }
+                    component={ Profile }
                     options={{
                         tabBarLabel: 'Profile',
                         tabBarIcon: ({ color, size }) => (
@@ -57,7 +54,7 @@ const MainTabScreen: React.FC <{}> = () => {
                 />
                 <Tab.Screen
                     name="Settings"
-                    component={ SettingsScreen }
+                    component={ Settings }
                     options={{
                         tabBarLabel: 'Settings',
                         tabBarIcon: ({ color, size }) => (
@@ -69,5 +66,3 @@ const MainTabScreen: React.FC <{}> = () => {
         </NavigationContainer>
     )
 }
-
-export default MainTabScreen

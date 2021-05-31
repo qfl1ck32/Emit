@@ -1,7 +1,7 @@
 import React from 'react'
 import { Controller } from 'react-hook-form'
 
-import Input, { InputProps } from './Input'
+import { StyledInput, InputProps } from './StyledInput'
 
 import * as Animatable from 'react-native-animatable'
 
@@ -28,14 +28,18 @@ interface StyledInputWithControllerProps extends InputProps {
 
     marginBottom?: boolean,
 
-    values: any
+    values: any,
+
+    color?: string,
+
+    errorColor?: string
 }
 
 interface State {
     errors: any
 }
 
-class StyledInputWithController extends React.Component <StyledInputWithControllerProps, State> {
+export class StyledInputWithController extends React.Component <StyledInputWithControllerProps, State> {
     constructor(props: StyledInputWithControllerProps) {
         super(props),
         this.state = {
@@ -58,7 +62,7 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
         
         return (
             <View style = { [this.props.marginBottom ? styles.marginBottom : [], styles.marginTop] }>
-                <Text style = { styles.text }> { this.props.title }</Text>
+                <Text style = { [styles.text, { color: this.props.color || '#000000' }] }> { this.props.title }</Text>
 
                 <View style = { styles.action }>
                     <FontAwesome name = { this.props.iconName } color = '#05375a' size = { 20 }/>
@@ -70,13 +74,14 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
                             ({ field: { onChange, onBlur, value }}) => {
 
                                 return (
-                                    <Input
+                                    <StyledInput
                                         placeholder = { this.props.placeholder }
                                         onChangeText = { onChange }
                                         onBlur = { onBlur }
                                         value = { value }
                                         secureTextEntry = { this.props.secureTextEntry }
                                         onKeyPress = { this.props.onKeyPress }
+                                        color = { this.props.color }
                                     />
                                 )
                             }
@@ -97,8 +102,8 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
 
                 { this.props.errors[this.props.name] && 
                     
-                    <Animatable.View animation = 'fadeInLeft' duration = { 500 }>
-                        <Text style = { styles.error }>
+                    <Animatable.View style = { styles.errorView } animation = 'fadeInLeft' duration = { 500 }>
+                        <Text style = { [styles.error, { color: this.props.errorColor || '#FF0033' }] }>
                             { this.props.errors[this.props.name].message }
                         </Text>
                     </Animatable.View>
@@ -111,12 +116,16 @@ class StyledInputWithController extends React.Component <StyledInputWithControll
 
 
 const styles = StyleSheet.create({
-    error: {
-        color: 'red'
+
+    errorView: {
+        marginTop: 4,
+        flexDirection: 'row',
+        flexWrap: 'wrap'
     },
 
-    success: {
-        color: 'green'
+    error: {
+        fontWeight: 'bold',
+        fontSize: 14
     },
 
     marginBottom: {
@@ -124,7 +133,6 @@ const styles = StyleSheet.create({
     },
    
     text: {
-        color: '#05375a',
         fontSize: 18
     },
 

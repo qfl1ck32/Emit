@@ -15,16 +15,18 @@ export interface InputProps {
     onKeyPress?: any,
 
     value?: any,
+
+    color?: string
 }
 
-const StyledInput: React.FC <InputProps> = ( { onBlur, value, onChangeText, secureTextEntry, placeholder, onKeyPress } ) => (
+export const StyledInput: React.FC <InputProps> = ( { onBlur, value, onChangeText, secureTextEntry, placeholder, onKeyPress, color } ) => (
     <TextInput
         onBlur = { onBlur }
         value = { value }
         onChangeText = { onChangeText } 
         secureTextEntry = { secureTextEntry }
         placeholder = { placeholder }
-        style = { styles.textInput }
+        style = { [styles.textInput, { color: color || '#000000' }] }
         autoCapitalize = 'none'
         onKeyPress = { onKeyPress }
     />
@@ -34,9 +36,6 @@ const styles = StyleSheet.create({
     textInput: {
         flex: 1,
         marginTop: Platform.OS == 'ios' ? 0 : -12,
-        paddingLeft: 10,
-        color: '#05375a'
+        paddingLeft: 10
     }
 })
-
-export default StyledInput

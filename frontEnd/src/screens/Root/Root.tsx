@@ -3,9 +3,7 @@ import React from 'react'
 import { createStackNavigator, StackScreenProps } from '@react-navigation/stack'
 import { NavigationContainer } from '@react-navigation/native'
 
-import SplashScreen from './SplashScreen'
-import LoginScreen from './LoginScreen'
-import SignUpScreen from './SignUpScreen'
+import { Splash, Login, SignUp } from '../index'
 
 export type RootStackParamList = {
     SplashScreen: undefined,
@@ -18,22 +16,20 @@ export type RootStackParamList = {
     SignUpScreen: undefined
 }
 
-export type NavigationProps <T extends keyof RootStackParamList> = StackScreenProps <RootStackParamList, T>
+export type RootNavigationProps <T extends keyof RootStackParamList> = StackScreenProps <RootStackParamList, T>
 
 const RootStack = createStackNavigator <RootStackParamList> ()
 
-const RootStackScreen: React.FC <{}> = () => {
+export const Root: React.FC <{}> = () => {
     return (
         <NavigationContainer>
             <RootStack.Navigator headerMode = 'none'>
-                <RootStack.Screen name = 'SplashScreen' component = { SplashScreen } />
+                <RootStack.Screen name = 'SplashScreen' component = { Splash } />
 
-                <RootStack.Screen name = 'LoginScreen' component = { LoginScreen } />
+                <RootStack.Screen name = 'LoginScreen' component = { Login } />
 
-                <RootStack.Screen name = 'SignUpScreen' component = { SignUpScreen } />
+                <RootStack.Screen name = 'SignUpScreen' component = { SignUp } />
             </RootStack.Navigator>
         </NavigationContainer>
     )
 }
-
-export default RootStackScreen

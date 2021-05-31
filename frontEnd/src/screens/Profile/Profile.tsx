@@ -1,12 +1,10 @@
 import React from 'react'
 import { View, Text } from 'react-native'
 
-const EmitScreen: React.FC <{}> = () => {
+export const Profile: React.FC <{}> = () => {
     return (
         <View>
-            <Text>Emit screen</Text>
+            <Text>Profile screen</Text>
         </View>
     )
 }
-
-export default EmitScreen

@@ -9,9 +9,7 @@ import {
     Alert
 } from 'react-native'
 
-import StyledInputWithController from './StyledInputWIthController'
-
-import PasswordStrengthMeter from './PasswordStrengthMeter'
+import { StyledInputWithController, PasswordStrengthMeter } from '../../components'
 
 import * as Animatable from 'react-native-animatable'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -22,16 +20,16 @@ import { FieldValues, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import { NavigationProps } from './RootStackScreen'
+import { RootNavigationProps } from '../Root' 
 
 import {
     checkAvailableEmail as checkEmail,
     checkAvailableUsername as checkUsername
-} from '../APIs/SignUp/checkAvailability'
+} from '../../APIs/SignUp/checkAvailability'
 
-import { signUp } from '../APIs/Root/signUp'
+import { signUp } from '../../APIs/Root/signUp'
 
-const SignUpScreen = ( { navigation }: NavigationProps <'SignUpScreen'> ) => {
+export const SignUp = ( { navigation }: RootNavigationProps <'SignUpScreen'> ) => {
 
     const schema = yup.object().shape({
         username: yup.string().required('This field is required.').min(4, 'Should be at least 4 characters long.').max(64, 'Should be at most 64 characters long.'),
@@ -301,6 +299,3 @@ const styles = StyleSheet.create({
         marginTop: 15
     }
 })
-
-
-export default SignUpScreen

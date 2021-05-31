@@ -12,14 +12,14 @@ import { LinearGradient } from 'expo-linear-gradient'
 import * as Animatable from 'react-native-animatable'
 import { MaterialIcons } from '@expo/vector-icons'
 
-import { NavigationProps } from './RootStackScreen'
+import { RootNavigationProps } from '../Root'
 
-const SplashScreen = ( { navigation }: NavigationProps <'SplashScreen'> ) => {
+export const Splash = ( { navigation }: RootNavigationProps <'SplashScreen'> ) => {
     return (
         <View style = { styles.container }>
             <View style = { styles.header }>
                 <Animatable.Image
-                    source = { require('../assets/images/logo.png') }
+                    source = { require('../../assets/images/logo.png') }
                     style = { styles.logo }
                     resizeMode = 'contain' 
                     animation = 'bounceIn'
@@ -111,5 +111,3 @@ const styles = StyleSheet.create({
           fontSize: 24
       }
 })
-
-export default SplashScreen

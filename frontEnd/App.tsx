@@ -1,10 +1,6 @@
 import React from 'react'
 
-import { NavigationContainer } from '@react-navigation/native'
-
-import RootStackScreen from './src/components/RootStackScreen'
-import SetupStackScreen from './src/components/SetupStackScreen'
-import MainTabScreen from './src/components/MainTabScreen'
+import { Root, Setup, MainTab } from './src/screens'
 
 import * as SecureStore from 'expo-secure-store'
 
@@ -40,7 +36,7 @@ const App = () => {
 
   return (
     <Provider store = { rootStore }>
-      <Root  />
+      <RootX  />
     </Provider>
   )
 }
@@ -52,21 +48,21 @@ const RootNavigation = (props: ReducerState) => {
   }
   
   if (props.userTokens === null) {
-    return <RootStackScreen />
+    return <Root />
   }
 
   if (props.isSetUp === false) {
-    return <SetupStackScreen />
+    return <Setup />
   }
   
   return (
     props.userTokens === null ?
-      <RootStackScreen />
+      <Root />
     : 
-      <MainTabScreen />
+      <MainTab />
   )
 }
 
-const Root = connect(state => state)(RootNavigation)
+const RootX = connect(state => state)(RootNavigation)
 
 export default App
