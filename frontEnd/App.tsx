@@ -7,8 +7,42 @@ import { MainTab } from './src/screens/MainTab'
 import * as SecureStore from 'expo-secure-store'
 
 import { connect, Provider } from 'react-redux'
+import rootStore, { ReducerState, } from './src/APIs/Root/store'
 
-import rootStore, { ReducerState } from './src/APIs/Root/store'
+import { ApolloClient, InMemoryCache, ApolloProvider, ApolloLink, HttpLink } from '@apollo/client'
+import { SERVER_IP } from '@env'
+
+const httpLink = ApolloLink.from([
+  new ApolloLink((operation, forward) => {
+    // const token = SecureStore.getItemAsync('accessToken')
+
+    const token = 'missing'
+
+    if (token) {
+      operation.setContext({
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+    }
+
+    return forward(operation)
+  }),
+
+  new HttpLink({
+    uri: `${SERVER_IP}/graphql`
+  })
+])
+
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  uri: `${SERVER_IP}/graphql`,
+  defaultOptions: {
+    query: {
+      fetchPolicy: 'no-cache'
+    }
+  }
+})
 
 import { ActionType } from './src/APIs/Root/ActionType'
 
@@ -37,9 +71,11 @@ const App = () => {
 }, [])
 
   return (
-    <Provider store = { rootStore }>
-      <RootX  />
-    </Provider>
+    <ApolloProvider client = { client }>
+      <Provider store = { rootStore }>
+        <RootX  />
+      </Provider>
+    </ApolloProvider>
   )
 }
 

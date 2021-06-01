@@ -5,11 +5,10 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native'
 import { SetChosenHobbies } from '../HobbiesWithDomain'
 
 export interface IHobby {
-    id: number
     title: string
 }
 
-export const Hobby: React.FC <IHobby & SetChosenHobbies> = ({ id, title, addHobby, removeHobby }) => {
+export const Hobby: React.FC <IHobby & SetChosenHobbies> = ({ title, addHobby, removeHobby }) => {
 
     const [chosen, setChosen] = useState(false)
 
@@ -25,7 +24,7 @@ export const Hobby: React.FC <IHobby & SetChosenHobbies> = ({ id, title, addHobb
     }
 
     return (
-        <TouchableOpacity onPress = { onPress } style = { [styles.item, chosen ? styles.chosen : styles.notChosen ] } key = { id }>
+        <TouchableOpacity onPress = { onPress } style = { [styles.item, chosen ? styles.chosen : styles.notChosen ] } >
             <Text style = { styles.itemTitle }>{ title }</Text>
         </TouchableOpacity>
     )

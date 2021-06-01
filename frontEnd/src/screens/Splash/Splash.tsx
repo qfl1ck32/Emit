@@ -15,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { RootNavigationProps } from '../Root'
 
 export const Splash = ( { navigation }: RootNavigationProps <'SplashScreen'> ) => {
+
     return (
         <View style = { styles.container }>
             <View style = { styles.header }>

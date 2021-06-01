@@ -8,20 +8,16 @@ import { store } from './store'
 import { SetupNavigationProps } from './interfaces'
 import { ActionType } from './ActionType'
 
-import { getHobbies } from '../../APIs/Setup/getHobbies'
-
 import { HobbiesWithDomain, IHobbiesWithDomain } from '../../components/HobbiesWithDomain'
+
+import { useQuery } from '@apollo/react-hooks'
+import { GET_HOBBIES } from '../../graphql'
 
 export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
 
-    const [hobbies, setHobbies] = useState <IHobbiesWithDomain[]> ([])
     const [chosenHobbies, setChosenHobbies] = useState <number[]> ([])
 
-    useEffect(() => {
-        getHobbies().then(hobbies => {
-            setHobbies(hobbies)
-        })
-    }, [])
+    const { data: hobbies, loading, error } = useQuery <{ "Hobbies": IHobbiesWithDomain[] }> (GET_HOBBIES)
 
     const onSubmit = () => {
         store.dispatch({
@@ -50,9 +46,8 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
 
             <Animatable.View animation = 'fadeInUpBig' duration = { 500 } style = { styles.footer } >
 
-            { hobbies && 
-                hobbies.map(hobby => (
-                    <HobbiesWithDomain addHobby = { chooseHobby } removeHobby = { unchooseHobby } { ...hobby } />
+            { hobbies?.Hobbies.map((hobby, index) => (
+                    <HobbiesWithDomain key = { index } addHobby = { chooseHobby } removeHobby = { unchooseHobby } { ...hobby } />
                 ))
             }
 

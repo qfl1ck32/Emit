@@ -6,7 +6,7 @@ import { IHobby, Hobby } from '../Hobby'
 
 export interface IHobbiesWithDomain {
     title: string,
-    items: IHobby[]
+    activities: IHobby[]
 }
 
 export interface SetChosenHobbies {
@@ -14,16 +14,16 @@ export interface SetChosenHobbies {
     removeHobby: (id: number) => void
 }
 
-export const HobbiesWithDomain: React.FC <IHobbiesWithDomain & SetChosenHobbies> = ({ title, items, addHobby, removeHobby }) => {
+export const HobbiesWithDomain: React.FC <IHobbiesWithDomain & SetChosenHobbies> = ({ title, activities, addHobby, removeHobby }) => {
 
     return (
         <View style = { styles.container }>
             <Text style = { styles.title }>{ title }</Text>
 
-            <ScrollView horizontal = { true } style = { styles.items }>
+            <ScrollView horizontal = { true } style = { styles.activities }>
                 {
-                    items.map(hobby => (
-                        <Hobby addHobby = { addHobby } removeHobby = { removeHobby } { ...hobby}  />
+                    activities.map((hobby, index) => (
+                        <Hobby key = { index } addHobby = { addHobby } removeHobby = { removeHobby } { ...hobby}  />
                     ))
                 }
             </ScrollView>
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 
-    items: {
+    activities: {
         display: 'flex',
         marginLeft: 8,
         flexDirection: 'row',
