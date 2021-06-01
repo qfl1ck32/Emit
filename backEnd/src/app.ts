@@ -8,7 +8,7 @@ import { verifyAccessToken, verifyRefreshToken, logoutToken, extractUser } from 
 import { login, signup, checkEmailTaken, checkUsernameTaken, confirmEmail } from './controllers'
 import { Database } from './Database'
 
-import { ApolloServer, gql } from 'apollo-server-express'
+import { ApolloServer } from 'apollo-server-express'
 
 config({
     path: resolve(__dirname, 'env')

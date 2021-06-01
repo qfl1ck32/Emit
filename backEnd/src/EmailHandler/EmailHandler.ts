@@ -2,7 +2,6 @@ import nodemailer from 'nodemailer'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
 
 import { compile } from 'handlebars'
-
 import { readFileSync } from 'fs'
 
 export class EmailHandler {
@@ -32,12 +31,12 @@ export class EmailHandler {
             }
         })
 
-        this.URL = process.env.SERVER_IP
+        this.URL = `${process.env.SERVER_IP}/verifyEmail`
     }
 
     public sendConfirmationEmail = async (to: string, URL: string) => {
 
-        const templateFile = readFileSync('assets/emails/emailConfirmationTemplate.html', { encoding: 'utf-8'})
+        let templateFile = readFileSync('./src/assets/emails/emailConfirmationTemplate.html', { encoding: 'utf-8'})
 
         const template = compile(templateFile)
 
@@ -47,7 +46,7 @@ export class EmailHandler {
 
         await this.sendMail(to, 'Emit - Confirm your account', HTML, [{
             filename: 'logo.png',
-            path: './assets/images/emitMailLogo.png',
+            path: './src/assets/images/emitMailLogo.png',
             cid: 'logo'
         }])
     }
