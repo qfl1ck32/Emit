@@ -3,7 +3,8 @@ import { ActionType } from './ActionType'
 
 export interface ReducerState {
     name: String,
-    picture: String
+    picture: String,
+    hobbies: number[]
 }
 
 export type ReducerAction = {
@@ -11,12 +12,13 @@ export type ReducerAction = {
 
     name?: String,
     picture?: String,
-    hobbies?: string[]
+    hobbies?: number[]
 }
 
 const initialState: ReducerState = {
     name: '',
-    picture: ''
+    picture: '',
+    hobbies: []
 }
 
 const reducer = (prevState: any, action: ReducerAction): ReducerState => {
@@ -33,6 +35,11 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
                 picture: action.picture
             }
 
+        case ActionType.SET_HOBBIES:
+            return {
+                ...prevState,
+                hobbies: action.hobbies
+            }
         default:
             return prevState
     }

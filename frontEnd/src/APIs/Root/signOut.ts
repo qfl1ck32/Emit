@@ -1,16 +1,16 @@
 import rootStore from './store'
 import axios from 'axios'
-import ActionType from './ActionType'
+import { ActionType } from './ActionType'
 
 import * as SecureStore from 'expo-secure-store'
 
-import authServerIP from '../IPs/authServerIP.json'
+import { SERVER_IP } from '@env'
 
 const signOut = async () => {
     const tokens = rootStore.getState().userTokens
   
     try {
-      await axios.post(`${authServerIP}/logout`, {}, {
+      await axios.post(`${SERVER_IP}/logout`, {}, {
         headers: {
           Authorization: `Bearer ${tokens?.accessToken} ${tokens?.refreshToken}`
         }

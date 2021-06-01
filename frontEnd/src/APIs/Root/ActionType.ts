@@ -1,4 +1,4 @@
-enum ActionType {
+export enum ActionType {
     SIGN_IN = 0,
     SIGN_UP = 1,
     SIGN_OUT = 2,
@@ -7,5 +7,3 @@ enum ActionType {
 
     UPDATE_ACCESS_TOKEN = 4
 }
-
-export default ActionType

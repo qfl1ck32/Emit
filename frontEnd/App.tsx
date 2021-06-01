@@ -10,7 +10,7 @@ import { connect, Provider } from 'react-redux'
 
 import rootStore, { ReducerState } from './src/APIs/Root/store'
 
-import ActionType from './src/APIs/Root/ActionType'
+import { ActionType } from './src/APIs/Root/ActionType'
 
 import { checkAuthenticated } from './src/APIs/Root/checkAuthenticated'
 

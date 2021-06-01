@@ -20,7 +20,7 @@ import * as yup from 'yup'
 
 import { RootNavigationProps } from '../Root/interfaces'
 
-import signIn from '../../APIs/Root/signIn'
+import { login } from '../../APIs/Root/login'
 
 export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen'> ) => {
 
@@ -46,9 +46,9 @@ export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen
 
     const onSubmit = async (values: FieldValues) => {
 
-        const trySign = await signIn(values['username'], values['password'])
+        const trySign = await login(values['username'], values['password'])
 
-        if (trySign && trySign.error)
+        if (trySign?.error)
             Alert.alert('Sign in', trySign.message)
     }
 
@@ -110,13 +110,13 @@ export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen
                 />
 
                 <View style = { styles.button }>
-                    <TouchableOpacity style = { styles.signIn } onPress = { onSubmitPress }>
-                        <LinearGradient style = { styles.signIn } colors = { ['#3187be', '#0d5d90'] }>
+                    <TouchableOpacity style = { styles.login } onPress = { onSubmitPress }>
+                        <LinearGradient style = { styles.login } colors = { ['#3187be', '#0d5d90'] }>
                             <Text style = { styles.textSign }>Sign in</Text>
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style = { [styles.signIn, styles.border] } onPress = { () => navigation.navigate('SignUpScreen') }>
+                    <TouchableOpacity style = { [styles.login, styles.border] } onPress = { () => navigation.navigate('SignUpScreen') }>
                         <Text style = { [styles.textSign, { color: 'green' }] }>Sign up</Text>
                     </TouchableOpacity>
                 </View>
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
         fontSize: 18
     },
 
-    signIn: {
+    login: {
         width: '100%',
         height: 50,
         justifyContent: 'center',

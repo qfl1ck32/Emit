@@ -100,10 +100,9 @@ export const SignUp = ( { navigation }: RootNavigationProps <'SignUpScreen'> ) =
         if (!(checkUsername && checkEmail))
             return
 
-
         const trySignUp = await signUp(values['username'], values['email'], values['password'])
 
-        if (trySignUp && trySignUp.error)
+        if (trySignUp?.error)
             return Alert.alert('Sign up', trySignUp.message)
 
         return navigation.navigate('LoginScreen', {

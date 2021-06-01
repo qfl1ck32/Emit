@@ -1,5 +1,5 @@
 import { createStore } from 'redux'
-import ActionType from './ActionType'
+import { ActionType } from './ActionType'
 
 export interface ReducerState {
     isLoading?: boolean,

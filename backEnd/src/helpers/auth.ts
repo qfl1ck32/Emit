@@ -4,12 +4,12 @@ dotenv.config()
 
 import jwt from 'jsonwebtoken'
 
-import express from 'express'
+import { Request, Response, NextFunction} from 'express'
 
-import RedisConnection from './RedisConnection'
+import { RedisConnection } from '../Redis'
 
 const   client = RedisConnection.getInstance().getClient(),
-        redisAccessTokenExpiration  = 60,
+        redisAccessTokenExpiration  = 600,
         redisRefreshTokenExpiration = 3600,
 
         accessTokenExpiration = redisAccessTokenExpiration.toString() + 's',
@@ -34,7 +34,7 @@ export const generateRefreshToken = (user: Object) => {
     return jwt.sign(user, process.env.refreshTokenSecret, { expiresIn: refreshTokenExpiration })
 }
 
-export const logoutToken = async (req: express.Request, res: express.Response) => {
+export const logoutToken = async (req: Request, res: Response) => {
 
     const authTokens = req.headers['authorization'].split(' ')
 
@@ -81,7 +81,31 @@ export const logoutToken = async (req: express.Request, res: express.Response) =
     })
 }
 
-export const verifyAccessToken = async (req: express.Request, res: express.Response, next: Function) => {
+export const extractUser = (req: Request) => {
+    if (!req.headers['authorization'])
+        return null
+
+    const authToken = req.headers['authorization'].split(' ')
+
+    if (!authToken[1])
+        return null
+
+    const accessToken = authToken[1]
+
+    let user = null
+
+    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, data: object) => {
+        if (err) {
+            return
+        }
+
+        user = data
+    })
+
+    return user
+}
+
+export const verifyAccessToken = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers['authorization'])
         return res.sendStatus(403)
     
@@ -119,7 +143,7 @@ export const verifyAccessToken = async (req: express.Request, res: express.Respo
     })
 }
 
-export const verifyRefreshToken = async (req: express.Request, res: express.Response) => {
+export const verifyRefreshToken = async (req: Request, res: Response) => {
 
     const authTokens = req.headers['authorization'].split(' ')
 

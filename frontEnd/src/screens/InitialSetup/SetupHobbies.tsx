@@ -10,21 +10,15 @@ import { ActionType } from './ActionType'
 
 import { getHobbies } from '../../APIs/Setup/getHobbies'
 
-const renderItem = ({ item }: any) => {
-    console.log(item)
-    return (
-        <Text>{ item.title }</Text>
-    )
-}
+import { HobbiesWithDomain, IHobbiesWithDomain } from '../../components/HobbiesWithDomain'
 
 export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
 
-    const [hobbies, setHobbies] = useState([])
+    const [hobbies, setHobbies] = useState <IHobbiesWithDomain[]> ([])
+    const [chosenHobbies, setChosenHobbies] = useState <number[]> ([])
 
     useEffect(() => {
         getHobbies().then(hobbies => {
-            console.log('dap')
-            console.log(hobbies)
             setHobbies(hobbies)
         })
     }, [])
@@ -32,10 +26,18 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
     const onSubmit = () => {
         store.dispatch({
             type: ActionType.SET_HOBBIES,
-            hobbies: []
+            hobbies: chosenHobbies
         })
         
         navigation.navigate('SetupPicture')
+    }
+
+    const chooseHobby = (id: number) => {
+        setChosenHobbies(prevHobbies => prevHobbies.concat(id))
+    }
+
+    const unchooseHobby = (id: number) => {
+        setChosenHobbies(prevHobbies => prevHobbies.filter(itemId => itemId !== id))
     }
 
     return (
@@ -48,7 +50,11 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
 
             <Animatable.View animation = 'fadeInUpBig' duration = { 500 } style = { styles.footer } >
 
-            <FlatList data = { hobbies } renderItem = { renderItem } />
+            { hobbies && 
+                hobbies.map(hobby => (
+                    <HobbiesWithDomain addHobby = { chooseHobby } removeHobby = { unchooseHobby } { ...hobby } />
+                ))
+            }
 
             <View style = { styles.button }>
                 <Button title = 'Continue' onPress = { onSubmit } />

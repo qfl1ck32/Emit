@@ -1,9 +1,9 @@
 import axios from 'axios'
 
-import authServerIP from '../IPs/authServerIP.json'
+import { SERVER_IP } from '@env'
 
 export const signUp = async (username: string, email: string, password: string) => {
-    const response = await axios.post(`${authServerIP}/signup`, { username, email, password })
+    const response = await axios.post(`${SERVER_IP}/signup`, { username, email, password })
   
     return response.data
 }

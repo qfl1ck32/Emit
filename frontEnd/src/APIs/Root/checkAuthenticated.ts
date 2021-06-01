@@ -1,11 +1,11 @@
 import * as SecureStore from 'expo-secure-store'
 
-import authServerIP from '../IPs/authServerIP.json'
-
 import axios, { AxiosError } from 'axios'
 
 import signOut from './signOut'
 import updateAccessToken from './updateAccessToken'
+
+import { SERVER_IP } from '@env'
 
 const handle401 = async (): Promise <void> => {
     const refreshToken = await SecureStore.getItemAsync('refreshToken')
@@ -14,7 +14,7 @@ const handle401 = async (): Promise <void> => {
         return signOut()
 
     try {
-        const response = await axios.post(`${authServerIP}/verifyRefreshToken`, {}, {
+        const response = await axios.post(`${SERVER_IP}/verifyRefreshToken`, {}, {
             headers: {
                 Authorization: `Bearer ${refreshToken}`
             }
@@ -36,7 +36,7 @@ export const checkAuthenticated = async (): Promise <void> => {
         return signOut()
 
     try {
-        return await axios.post(`${authServerIP}/verifyAccessToken`, {}, {
+        return await axios.post(`${SERVER_IP}/verifyAccessToken`, {}, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }

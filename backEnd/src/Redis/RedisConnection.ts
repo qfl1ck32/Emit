@@ -1,6 +1,6 @@
 import redis from 'redis'
 
-class RedisConnection {
+export class RedisConnection {
     private client: redis.RedisClient;
 
     public static instance: RedisConnection;
@@ -20,5 +20,3 @@ class RedisConnection {
         return this.client;
     }
 }
-
-export default RedisConnection

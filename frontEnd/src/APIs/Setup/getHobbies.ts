@@ -1,8 +1,9 @@
 import { RequestType, withAutoResend } from '../Root/requestWrapperAPI'
-import serverIP from '../../APIs/IPs/serverIP.json'
+
+import { SERVER_IP } from '@env'
 
 export const getHobbies = async () => {
-    const hobbies = await withAutoResend(RequestType.GET, `${serverIP}/hobbies`) as { data: any }
+    const hobbies = await withAutoResend(RequestType.GET, `${SERVER_IP}/hobbies`) as { data: any }
 
     return hobbies.data
 }
