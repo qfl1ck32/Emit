@@ -3,8 +3,9 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import rootStore from './store'
 import signOut from './signOut'
 
-import authServerIP from '../IPs/authServerIP.json'
 import updateAccessToken from './updateAccessToken'
+
+import { SERVER_IP } from '@env'
 
 export enum RequestType {
     GET = 0,
@@ -26,7 +27,7 @@ const axiosRequest = (type: RequestType) => {
     }
 }
 
-const withAutoResend = async (type: RequestType, url: string, data?: any, config?: AxiosRequestConfig | undefined): Promise <AxiosResponse <any> | void>  => {
+export const withAutoResend = async (type: RequestType, url: string, data?: any, config?: AxiosRequestConfig | undefined): Promise <AxiosResponse <any> | void>  => {
     const state = rootStore.getState()
 
     const accessToken = state.userTokens?.accessToken
@@ -54,7 +55,7 @@ const withAutoResend = async (type: RequestType, url: string, data?: any, config
                 const refreshToken = state.userTokens?.refreshToken
 
                 try {
-                    const response = await axios.post(`${authServerIP}/verifyRefreshToken`, {}, {
+                    const response = await axios.post(`${SERVER_IP}/verifyRefreshToken`, {}, {
                         headers: {
                             Authorization: `Bearer ${refreshToken}`
                         }

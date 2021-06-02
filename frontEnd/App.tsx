@@ -1,19 +1,20 @@
 import React from 'react'
 
-import { NavigationContainer } from '@react-navigation/native'
-
-import RootStackScreen from './src/components/RootStackScreen'
-import MainTabScreen from './src/components/MainTabScreen'
+import { Root } from './src/screens/Root'
+import { Setup } from './src/screens/InitialSetup/Setup'
+import { MainTab } from './src/screens/MainTab'
 
 import * as SecureStore from 'expo-secure-store'
 
 import { connect, Provider } from 'react-redux'
-
 import rootStore, { ReducerState } from './src/APIs/Root/store'
 
-import ActionType from './src/APIs/Root/ActionType'
+import { ApolloProvider } from '@apollo/client'
 
+import { ActionType } from './src/APIs/Root/ActionType'
 import { checkAuthenticated } from './src/APIs/Root/checkAuthenticated'
+
+import { client } from './src/graphql/client'
 
 const App = () => {
 
@@ -39,29 +40,35 @@ const App = () => {
 
   return (
     <Provider store = { rootStore }>
-      <Root  />
+      <ApolloProvider client = { client }>
+        <RootX  />
+      </ApolloProvider>
     </Provider>
   )
 }
 
 const RootNavigation = (props: ReducerState) => {
 
-  if (props.isLoading)
+  if (props.isLoading) {
     return null
+  }
+  
+  if (props.userTokens === null) {
+    return <Root />
+  }
+
+  if (props.isSetUp === false) {
+    return <Setup />
+  }
   
   return (
-    <NavigationContainer>
-      {
-        
-        props.userTokens === null ?
-          <RootStackScreen />
-        : 
-          <MainTabScreen />
-      }
-    </NavigationContainer>
+    props.userTokens === null ?
+      <Root />
+    : 
+      <MainTab />
   )
 }
 
-const Root = connect(state => state)(RootNavigation)
+const RootX = connect(state => state)(RootNavigation)
 
 export default App

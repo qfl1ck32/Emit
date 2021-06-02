@@ -1,5 +1,5 @@
 import { createStore } from 'redux'
-import ActionType from './ActionType'
+import { ActionType } from './ActionType'
 
 export interface ReducerState {
     isLoading?: boolean,
@@ -10,7 +10,7 @@ export interface ReducerState {
     },
     isSetUp?: boolean
 }
-  
+
 type ReducerAction = {
     type: ActionType,
     tokens: null | {
@@ -19,10 +19,9 @@ type ReducerAction = {
     },
     isSetUp?: boolean
 }
-  
+
 const initialState: ReducerState = {
     isLoading: true,
-    isSignout: false,
     userTokens: null,
     isSetUp: false
 }
