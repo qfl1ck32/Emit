@@ -9,6 +9,10 @@ const Query = /* GraphQL */ `
     type Query {
         _empty: String
     }
+
+    type Mutation {
+        _empty: String
+    }
 `
 
 export const schema = makeExecutableSchema({

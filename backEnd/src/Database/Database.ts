@@ -11,7 +11,13 @@ export class Database {
         if (Database.instance == null) {
             Database.instance = new Database()
 
-            connect(Database.uri, { useNewUrlParser: true, useUnifiedTopology: true }, error => {
+            const settings = {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+                useCreateIndex: true
+            }
+
+            connect(Database.uri, settings, error => {
                 if (error)
                     throw new Error('Error when trying to connect to MongoDB: ' + error.message)
             })

@@ -34,54 +34,24 @@ export const generateRefreshToken = (user: Object) => {
     return jwt.sign(user, process.env.refreshTokenSecret, { expiresIn: refreshTokenExpiration })
 }
 
-export const logoutToken = async (req: Request, res: Response) => {
+// doesn't handle all cases
 
-    const authTokens = req.headers['authorization'].split(' ')
-
-    if (authTokens[1] == 'null' || authTokens[2] == 'null')
-        return res.sendStatus(403)
-
-    const accessToken = authTokens[1], refreshToken = authTokens[2]
-
-    if (!(accessToken && refreshToken))
-        return res.sendStatus(403)
-
-    const validRefreshToken = await checkBlacklistToken(refreshToken), validAccessToken = await checkBlacklistToken(accessToken)
-
-    if (!(validRefreshToken && validAccessToken))
-        return res.sendStatus(403)
-    
-    let done = false
-
-    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, user: object) => {
-        if (err) {
-            done = true
-            if (err instanceof jwt.TokenExpiredError)
-                return res.sendStatus(401)
-            return res.sendStatus(403)
+export const blacklistTokens = (accessToken: string, refreshToken: string) => {
+    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors) => {
+        if (err && err !instanceof jwt.TokenExpiredError || !err) {
+            client.setex(accessToken, redisAccessTokenExpiration, accessToken)
         }
     })
 
-    if (done)
-        return
-
-    jwt.verify(refreshToken, process.env.refreshTokenSecret, (err, user) => {
-        if (err)
-            return res.sendStatus(403)
-
-        client.setex(accessToken, redisAccessTokenExpiration, accessToken)
-        client.setex(refreshToken, redisRefreshTokenExpiration, refreshToken)
-
-
-        // const payLoad = jwt.verify(refreshToken, process.env.refreshTokenSecret, { ignoreExpiration: true })
-
-        // logout(payLoad.id)
-    
-        return res.sendStatus(200)
+    jwt.verify(refreshToken, process.env.refreshTokenSecret, (err: jwt.VerifyErrors) => {
+        if (err && err !instanceof jwt.TokenExpiredError || !err) {
+            client.setex(refreshToken, redisRefreshTokenExpiration, refreshToken)
+        }
     })
 }
 
 export const extractUser = (req: Request) => {
+
     if (!req.headers['authorization'])
         return null
 
@@ -94,16 +64,19 @@ export const extractUser = (req: Request) => {
 
     let user = null
 
-    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, data: object) => {
-        if (err) {
-            return
-        }
-
-        user = data
+    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, data: { _id: string, username: string, email: string }) => {
+        if (!err)
+            user = {
+                _id: data._id,
+                username: data.username,
+                email: data.email
+            }
     })
 
     return user
 }
+
+// adapt to graphql
 
 export const verifyAccessToken = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers['authorization'])
@@ -163,9 +136,7 @@ export const verifyRefreshToken = async (req: Request, res: Response) => {
     jwt.verify(refreshToken, process.env.refreshTokenSecret, (err, user) => {
         if (err) {
             if (err instanceof jwt.TokenExpiredError) {
-                // const payLoad = jwt.verify(refreshToken, process.env.refreshTokenSecret, { ignoreExpiration: true })
-
-                // logout(payLoad.id)
+                // nothing?
             }
 
             return res.sendStatus(403)  

@@ -1,11 +1,10 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { readFileSync } from 'fs'
 
 import express from 'express'
 
-import { verifyAccessToken, verifyRefreshToken, logoutToken, extractUser } from './helpers/auth'
-import { login, signup, checkEmailTaken, checkUsernameTaken, confirmEmail } from './controllers'
+import { verifyAccessToken, verifyRefreshToken, extractUser } from './helpers/auth'
+import { confirmEmail } from './controllers'
 import { Database } from './Database'
 
 import { ApolloServer } from 'apollo-server-express'
@@ -24,12 +23,9 @@ import { schema } from './graphql/schema'
 const apolloServer = new ApolloServer({
     schema,
     context: ({ req }) => {
-        
         const user = extractUser(req)
 
-        return {
-            user
-        }
+        return { user }
     }
 })
 
@@ -48,15 +44,9 @@ app.use(express.urlencoded({
     extended: true
 }))
 
-app.use('/verifyAccessToken', verifyAccessToken)
-app.use('/verifyRefreshToken', verifyRefreshToken)
-app.use('/logout', logoutToken)
+app.post('/verifyAccessToken', verifyAccessToken)
+app.post('/verifyRefreshToken', verifyRefreshToken)
 
-app.post('/login', login)
-app.post('/signup', signup)
-
-app.post('/checkEmailTaken', checkEmailTaken)
-app.post('/checkUsernameTaken', checkUsernameTaken)
 
 app.get('/confirmEmail', confirmEmail)
 
