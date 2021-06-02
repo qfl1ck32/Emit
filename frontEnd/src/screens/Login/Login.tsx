@@ -20,7 +20,7 @@ import * as yup from 'yup'
 
 import { RootNavigationProps } from '../Root/interfaces'
 
-import { login } from '../../APIs/Root/login'
+import { login } from '../../services'
 
 export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen'> ) => {
 
@@ -46,10 +46,10 @@ export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen
 
     const onSubmit = async (values: FieldValues) => {
 
-        const trySign = await login(values['username'], values['password'])
+        const { err } = await login(values['username'], values['password'])
 
-        if (trySign?.error)
-            Alert.alert('Sign in', trySign.message)
+        if (err)
+            Alert.alert('Sign in', err)
     }
 
     const [passwordSettings, setPasswordSettings] = React.useState({

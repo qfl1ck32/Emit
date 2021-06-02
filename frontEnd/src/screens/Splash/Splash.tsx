@@ -16,6 +16,7 @@ import { RootNavigationProps } from '../Root'
 
 export const Splash = ( { navigation }: RootNavigationProps <'SplashScreen'> ) => {
 
+
     return (
         <View style = { styles.container }>
             <View style = { styles.header }>
@@ -54,6 +55,7 @@ export const Splash = ( { navigation }: RootNavigationProps <'SplashScreen'> ) =
                         </LinearGradient>
                     </TouchableOpacity>
                 </View>
+
             </Animatable.View>
         </View>
     )

@@ -10,7 +10,7 @@ import { SetupPicture } from './SetupPicture'
 import { SetupHobbies } from './SetupHobbies'
 import { DoneSetup } from './DoneSetup'
 
-import signOut from '../../APIs/Root/signOut'
+import { logout } from '../../services'
 
 import { SetupStackParamList } from './interfaces'
 
@@ -27,7 +27,7 @@ export const Setup: React.FC <{}> = () => {
                 },
                 headerRight: () => (
                     <View style = { { marginRight: 8} }>
-                        <Button onPress = { signOut } title = 'Sign out' />
+                        <Button onPress = { logout } title = 'Sign out' />
                     </View>
                 )
             } }>

@@ -22,12 +22,7 @@ import * as yup from 'yup'
 
 import { RootNavigationProps } from '../Root/interfaces' 
 
-import {
-    checkAvailableEmail as checkEmail,
-    checkAvailableUsername as checkUsername
-} from '../../APIs/SignUp/checkAvailability'
-
-import { signUp } from '../../APIs/Root/signUp'
+import { register, checkEmailExists as checkEmail, checkUsernameExists as checkUsername } from '../../services'
 
 export const SignUp = ( { navigation }: RootNavigationProps <'SignUpScreen'> ) => {
 
@@ -41,13 +36,13 @@ export const SignUp = ( { navigation }: RootNavigationProps <'SignUpScreen'> ) =
 
     const usernameAPIValidation = yup.object().shape({
         username: yup.string().test('is-taken', 'Username is already used.', async (username: any) => {
-            return await checkUsername(username)
+            return !(await checkUsername(username))
         })
     })
 
     const emailAPIValidation = yup.object().shape({
         email: yup.string().test('is-taken', 'Email is already used.', async (email: any) => {
-            return await checkEmail(email)
+            return !(await checkEmail(email))
         })
     })
 
@@ -100,10 +95,10 @@ export const SignUp = ( { navigation }: RootNavigationProps <'SignUpScreen'> ) =
         if (!(checkUsername && checkEmail))
             return
 
-        const trySignUp = await signUp(values['username'], values['email'], values['password'])
+        const { errors } = await register(values['username'], values['email'], values['password'])
 
-        if (trySignUp?.error)
-            return Alert.alert('Sign up', trySignUp.message)
+        if (errors)
+            return Alert.alert('Sign up', errors[0].message)
 
         return navigation.navigate('LoginScreen', {
             username: values['username'],

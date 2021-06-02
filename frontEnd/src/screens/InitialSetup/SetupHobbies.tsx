@@ -19,6 +19,14 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
 
     const { data: hobbies, loading, error } = useQuery <{ "Hobbies": IHobbiesWithDomain[] }> (GET_HOBBIES)
 
+    console.log(hobbies)
+
+    if (error) {
+        console.log('DA')
+        console.log(error)
+        return null
+    }
+
     const onSubmit = () => {
         store.dispatch({
             type: ActionType.SET_HOBBIES,
