@@ -13,10 +13,6 @@ const Tab = createBottomTabNavigator()
 
 export const MainTab: React.FC <{}> = () => {
 
-    useEffect(() => {
-        console.log('ceva');
-    }, []);
-
     return (
         <NavigationContainer>
             <Tab.Navigator

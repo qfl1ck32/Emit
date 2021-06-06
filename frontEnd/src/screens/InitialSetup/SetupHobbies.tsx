@@ -17,15 +17,8 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
 
     const [chosenHobbies, setChosenHobbies] = useState <number[]> ([])
 
-    const { data: hobbies, loading, error } = useQuery <{ "Hobbies": IHobbiesWithDomain[] }> (GET_HOBBIES)
+    const { data: hobbies, error } = useQuery <{ "Hobbies": IHobbiesWithDomain[] }> (GET_HOBBIES)
 
-    console.log(hobbies)
-
-    if (error) {
-        console.log('DA')
-        console.log(error)
-        return null
-    }
 
     const onSubmit = () => {
         store.dispatch({

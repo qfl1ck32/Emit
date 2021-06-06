@@ -31,7 +31,7 @@ export class EmailHandler {
             }
         })
 
-        this.URL = `${process.env.SERVER_IP}/verifyEmail`
+        this.URL = `${process.env.SERVER_IP}/confirmEmail`
     }
 
     public sendConfirmationEmail = async (to: string, URL: string) => {

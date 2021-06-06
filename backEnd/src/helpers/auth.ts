@@ -4,18 +4,24 @@ dotenv.config()
 
 import jwt from 'jsonwebtoken'
 
-import { Request, Response, NextFunction} from 'express'
+import { Request } from 'express'
 
 import { RedisConnection } from '../Redis'
 
+interface IUser {
+    _id: string,
+    username: string,
+    email: string
+}
+
 const   client = RedisConnection.getInstance().getClient(),
-        redisAccessTokenExpiration  = 600,
-        redisRefreshTokenExpiration = 3600,
+        redisAccessTokenExpiration  = 5,
+        redisRefreshTokenExpiration = 8,
 
         accessTokenExpiration = redisAccessTokenExpiration.toString() + 's',
         refreshTokenExpiration = redisRefreshTokenExpiration.toString() + 's'
 
-const checkBlacklistToken = async (token: string) => {
+export const checkBlacklistToken = async (token: string) => {
     return new Promise((resolve, reject) => {
         client.exists(token, (err, ans) => {
             if (err)
@@ -64,97 +70,31 @@ export const extractUser = (req: Request) => {
 
     let user = null
 
-    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, data: { _id: string, username: string, email: string }) => {
-        if (!err)
+    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, data: IUser) => {
+        if (err) {
             user = {
                 _id: data._id,
                 username: data.username,
                 email: data.email
             }
+        }
     })
 
     return user
 }
 
-// adapt to graphql
-
-export const verifyAccessToken = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.headers['authorization'])
-        return res.sendStatus(403)
-    
-    const authTokens = req.headers['authorization'].split(' ')
-
-    if (authTokens[1] == 'null')
-        return res.sendStatus(403)
-
-    const accessToken = authTokens[1]
-
-    if (!accessToken)
-        return res.sendStatus(403)
-
-    const validAccessToken = await checkBlacklistToken(accessToken)
-
-    if (!validAccessToken)
-        return res.sendStatus(403)
-
-    jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, user: object) => {
-        if (err) {
-            if (err instanceof jwt.TokenExpiredError)
-                return res.sendStatus(401)
-            return res.sendStatus(403)
-        }
-
-        delete user['iat']
-        delete user['exp']
-
-        if (next)
-            return next()
-
-        return res.json({
-            user: user
+export const extractUserFromRefresh = async (token: string) => {
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, process.env.refreshTokenSecret, (err: jwt.VerifyErrors, user: IUser) => {
+            if (err)
+                return resolve(null)
+            
+            return resolve({
+                _id: user._id,
+                email: user.email,
+                username: user.username
+            })
         })
     })
-}
 
-export const verifyRefreshToken = async (req: Request, res: Response) => {
-
-    const authTokens = req.headers['authorization'].split(' ')
-
-    if (authTokens[1] == 'null')
-        return res.sendStatus(403)
-
-    const refreshToken = authTokens[1]
-
-    if (!refreshToken)
-        return res.sendStatus(403)
-
-    const validRefreshToken = await checkBlacklistToken(refreshToken)
-
-    if (!validRefreshToken)
-        return res.sendStatus(403)
-
-    jwt.verify(refreshToken, process.env.refreshTokenSecret, (err, user) => {
-        if (err) {
-            if (err instanceof jwt.TokenExpiredError) {
-                // nothing?
-            }
-
-            return res.sendStatus(403)  
-        }
-
-        delete user['iat']
-        delete user['exp']
-        
-        const accessToken = generateAccessToken(user)
-
-        const userInfo = jwt.verify(accessToken, process.env.accessTokenSecret)
-
-        delete userInfo['iat']
-        delete userInfo['exp']
-
-        return res.status(200).json({
-            user: userInfo,
-            accessToken: accessToken
-        })
-    })
 }

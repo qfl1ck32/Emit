@@ -14,7 +14,10 @@ import { store } from './store'
 import { SetupNavigationProps } from './interfaces'
 import { ActionType } from './ActionType'
 
+import { client, GET_HOBBIES } from '../../graphql'
+
 export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
+
     const schema = yup.object().shape({
         name: yup.string().required('This field is required.')
     })
