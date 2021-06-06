@@ -1,3 +1,4 @@
+import { setItemAsync } from 'expo-secure-store'
 import { createStore } from 'redux'
 import { ActionType } from './ActionType'
 
@@ -49,6 +50,7 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
             }
 
         case ActionType.UPDATE_ACCESS_TOKEN:
+
             return {
                 ...prevState,
                 userTokens: {
@@ -62,6 +64,6 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
     }
 }
 
-const rootStore = createStore(reducer, initialState)
+export const rootStore = createStore(reducer, initialState)
 
 export default rootStore

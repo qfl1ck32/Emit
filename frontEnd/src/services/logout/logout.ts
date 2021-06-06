@@ -5,7 +5,6 @@ import { client, LOGOUT } from '../../graphql'
 import { ActionType } from '../../APIs/Root/ActionType'
 
 
-// adapt it
 export const logout = async () => {
     const accessToken = await getItemAsync('accessToken')
     const refreshToken = await getItemAsync('refreshToken')
