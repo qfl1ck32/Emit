@@ -22,8 +22,6 @@ const connection = Database.getInstance().connection()
 const apolloServer = new ApolloServer({
     schema,
     context: ({ req }) => {
-        console.log('Primesc cerere, req.headers:')
-        console.log(req.headers)
         const user = extractUser(req)
 
         return { user }

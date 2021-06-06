@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-import { View, Text, Button, StyleSheet, FlatList } from 'react-native'
+import { View, Text, Button, StyleSheet } from 'react-native'
 
 import * as Animatable from 'react-native-animatable'
 
@@ -17,8 +17,7 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
 
     const [chosenHobbies, setChosenHobbies] = useState <number[]> ([])
 
-    const { data: hobbies, error } = useQuery <{ "Hobbies": IHobbiesWithDomain[] }> (GET_HOBBIES)
-
+    const { data: hobbies, loading, error } = useQuery <{ "Hobbies": IHobbiesWithDomain[] }> (GET_HOBBIES)
 
     const onSubmit = () => {
         store.dispatch({
@@ -36,6 +35,17 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
     const unchooseHobby = (id: number) => {
         setChosenHobbies(prevHobbies => prevHobbies.filter(itemId => itemId !== id))
     }
+
+    if (loading) {
+        return null
+    }
+
+    if (error) {
+        console.log(error)
+        return null
+    }
+
+    console.log(hobbies)
 
     return (
         <View style = { styles.container }>
