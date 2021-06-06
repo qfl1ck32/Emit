@@ -23,6 +23,7 @@
     "@types/react-redux": "^7.1.16",
     "callstack": "^1.0.1",
     "expo": "~41.0.1",
+    "expo-image-manipulator": "~9.1.0",
     "expo-image-picker": "^10.1.4",
     "expo-linear-gradient": "^9.1.0",
     "expo-secure-store": "^10.1.0",

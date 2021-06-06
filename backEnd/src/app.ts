@@ -9,6 +9,7 @@ import { Database } from './Database'
 
 import { ApolloServer } from 'apollo-server-express'
 import { schema } from './graphql/schema'
+import { addMock } from './services/Hobby'
 
 
 config({
@@ -37,13 +38,19 @@ connection.once('open', () => {
     console.log('Connected to MongoDB.')
 })
 
-app.use(express.json())
+//FIXME too much?
+app.use(express.json({
+    limit: '10MB'
+}))
+
 app.use(express.urlencoded({
-    extended: true
+    extended: true,
+    limit: '10MB'
 }))
 
 app.get('/confirmEmail', confirmEmail)
 
 app.listen(port, async () => {
     console.log(`Listening on port ${ port }.`)
+    // addMock()
 })

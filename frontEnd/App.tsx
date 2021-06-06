@@ -7,12 +7,11 @@ import { MainTab } from './src/screens/MainTab'
 import * as SecureStore from 'expo-secure-store'
 
 import { connect, Provider } from 'react-redux'
-import rootStore, { ReducerState } from './src/APIs/Root/store'
+import rootStore, { ReducerState } from './src/Root/store'
 
 import { ApolloProvider } from '@apollo/client'
 
-import { ActionType } from './src/APIs/Root/ActionType'
-import { checkAuthenticated } from './src/APIs/Root/checkAuthenticated'
+import { ActionType } from './src/Root/ActionType'
 
 import { client } from './src/graphql/client'
 
@@ -21,7 +20,7 @@ const App = () => {
   React.useEffect(() => {
     const bootstrapAsync = async () => {
 
-      await checkAuthenticated()
+      // await checkAuthenticated() //FIXME is this needed in any way?
 
       const accessToken = await SecureStore.getItemAsync('accessToken')
       const refreshToken = await SecureStore.getItemAsync('refreshToken')

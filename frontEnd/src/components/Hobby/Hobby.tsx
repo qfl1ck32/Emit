@@ -2,25 +2,26 @@ import React, { useState } from 'react'
 
 import { TouchableOpacity, Text, StyleSheet } from 'react-native'
 
-import { SetChosenHobbies } from '../HobbiesWithDomain'
+import { SetChosenHobbies } from '../HobbiesWithCategory'
 
 export interface IHobby {
+    _id: string,
     title: string
 }
 
-export const Hobby: React.FC <IHobby & SetChosenHobbies> = ({ title, addHobby, removeHobby }) => {
+export const Hobby: React.FC <IHobby & SetChosenHobbies> = ({ _id, title, addHobby, removeHobby }) => {
 
     const [chosen, setChosen] = useState(false)
 
     const onPress = () => {
         if (chosen) {
             setChosen(false)
-            removeHobby(id)
+            removeHobby(_id)
             return
         }
 
         setChosen(true)
-        addHobby(id)
+        addHobby(_id)
     }
 
     return (

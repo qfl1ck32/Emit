@@ -16,7 +16,7 @@ interface IUser {
 
 const   client = RedisConnection.getInstance().getClient(),
         redisAccessTokenExpiration  = 5,
-        redisRefreshTokenExpiration = 8,
+        redisRefreshTokenExpiration = 3600,
 
         accessTokenExpiration = redisAccessTokenExpiration.toString() + 's',
         refreshTokenExpiration = redisRefreshTokenExpiration.toString() + 's'

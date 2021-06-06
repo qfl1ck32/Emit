@@ -1,5 +1,5 @@
 export enum ActionType {
     SET_NAME,
-    SET_PICTURE,
+    SET_IMAGE,
     SET_HOBBIES
 }

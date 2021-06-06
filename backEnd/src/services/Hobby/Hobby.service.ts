@@ -1,18 +1,27 @@
-import { HobbyModel, IHobby } from '../../models'
-import { FilterQuery } from 'mongodb'
+import { HobbyModel, HobbyCategoryModel } from '../../models'
 
-export const addMock = () => {
+export const addMock = async () => {
+    await HobbyCategoryModel.remove()
+    await HobbyModel.remove()
+
     const titles = ['Sports', 'Arts', 'Mooscles']
     const activities = [
-        ['Football', 'Basketball', 'Gumball'],
-        ['Painting', 'Drawing', 'Bob Ross'],
-        ['Bodybuilding', 'Calisthenics', 'Watching Chris Heria']
+        ['Football', 'Basketball', 'Tennis', 'Badminton', 'Gumball'],
+        ['Painting', 'Drawing', 'Dancing', 'Photography', 'Bob Ross'],
+        ['Bodybuilding', 'Calisthenics', 'Powerlifting', 'Crossfit',
+            'Watching Chris Heria']
     ]
 
     for (let i = 0; i < titles.length; ++i) {
-        HobbyModel.create({
-            title: titles[i],
-            activities: activities[i]
+        const { _id } = await HobbyCategoryModel.create({
+            category: titles[i]
         })
+
+        for (const activity of activities[i]) {
+            await HobbyModel.create({
+                title: activity,
+                categoryId: _id
+            });
+        }
     }
 }

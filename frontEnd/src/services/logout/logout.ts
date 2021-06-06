@@ -1,8 +1,9 @@
 import { getItemAsync, deleteItemAsync } from 'expo-secure-store'
-import rootStore from '../../APIs/Root/store'
-import { client, LOGOUT } from '../../graphql'
+import rootStore from '../../Root/store'
+import { client } from '../../graphql/client'
+import { LOGOUT } from '../../graphql/mutations'
 
-import { ActionType } from '../../APIs/Root/ActionType'
+import { ActionType } from '../../Root/ActionType'
 
 
 export const logout = async () => {

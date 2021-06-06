@@ -2,22 +2,22 @@ import { createStore } from 'redux'
 import { ActionType } from './ActionType'
 
 export interface ReducerState {
-    name: String,
-    picture: String,
-    hobbies: number[]
+    name: string,
+    image: string,
+    hobbies: string[]
 }
 
 export type ReducerAction = {
     type: ActionType,
 
     name?: String,
-    picture?: String,
-    hobbies?: number[]
+    image?: String | null,
+    hobbies?: string[]
 }
 
 const initialState: ReducerState = {
     name: '',
-    picture: '',
+    image: '',
     hobbies: []
 }
 
@@ -29,10 +29,10 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
                 name: action.name
             }
 
-        case ActionType.SET_PICTURE:
+        case ActionType.SET_IMAGE:
             return {
                 ...prevState,
-                picture: action.picture
+                image: action.image
             }
 
         case ActionType.SET_HOBBIES:
