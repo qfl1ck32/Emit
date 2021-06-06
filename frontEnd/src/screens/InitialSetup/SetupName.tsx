@@ -18,17 +18,6 @@ import { client, GET_HOBBIES } from '../../graphql'
 
 export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
 
-    const TEST = async () => {
-        const { data, error, errors } = await client.query({
-            query: GET_HOBBIES
-        })
-
-        if (errors)
-            console.log('Error: ' + errors[0].message)
-        else
-            console.log(data)
-    }
-
     const schema = yup.object().shape({
         name: yup.string().required('This field is required.')
     })
@@ -78,10 +67,6 @@ export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) =>
 
             <View style = { styles.button }>
                 <Button title = 'Continue' onPress = { onSubmitPress } />
-            </View>
-
-            <View style = { styles.button }>
-                <Button title = 'TEST' onPress = { TEST } />
             </View>
 
         </Animatable.View>

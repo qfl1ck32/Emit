@@ -30,8 +30,6 @@ export const login = async(username: string, password: string) => {
 
             isSetUp: false
         })
-
-        console.log(refreshToken)
     }
 
     return { err: errors?.[0].message }

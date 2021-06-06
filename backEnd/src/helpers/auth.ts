@@ -71,18 +71,12 @@ export const extractUser = (req: Request) => {
     let user = null
 
     jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, data: IUser) => {
-        console.log('Am verificat token, si')
         if (err) {
-            console.log(err)
-        }
-
-        else {
             user = {
                 _id: data._id,
                 username: data.username,
                 email: data.email
             }
-            console.log('e fresh!')
         }
     })
 
