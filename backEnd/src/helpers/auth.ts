@@ -16,7 +16,7 @@ interface IUser {
 
 const   client = RedisConnection.getInstance().getClient(),
         redisAccessTokenExpiration  = 5,
-        redisRefreshTokenExpiration = 8,
+        redisRefreshTokenExpiration = 3600,
 
         accessTokenExpiration = redisAccessTokenExpiration.toString() + 's',
         refreshTokenExpiration = redisRefreshTokenExpiration.toString() + 's'
@@ -71,7 +71,7 @@ export const extractUser = (req: Request) => {
     let user = null
 
     jwt.verify(accessToken, process.env.accessTokenSecret, (err: jwt.VerifyErrors, data: IUser) => {
-        if (err) {
+        if (!err) {
             user = {
                 _id: data._id,
                 username: data.username,

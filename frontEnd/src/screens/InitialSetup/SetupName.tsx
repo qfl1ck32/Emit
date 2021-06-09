@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import { View, Text, Button, StyleSheet } from 'react-native'
 
@@ -14,15 +14,13 @@ import { store } from './store'
 import { SetupNavigationProps } from './interfaces'
 import { ActionType } from './ActionType'
 
-import { client, GET_HOBBIES } from '../../graphql'
-
 export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
 
     const schema = yup.object().shape({
         name: yup.string().required('This field is required.')
     })
 
-    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues } = useForm({
+    const { control, handleSubmit, formState: { errors, dirtyFields, touchedFields }, getValues, setValue } = useForm({
         resolver: yupResolver(schema),
         mode: 'onSubmit'
     })
@@ -41,6 +39,11 @@ export const SetupName = ({ navigation }: SetupNavigationProps <'SetupName'>) =>
     const values = getValues()
 
     const formProps = { errors, control, dirtyFields, values, touchedFields }
+
+    //TODO remove this (only for dev)
+    useEffect(() => {
+        setValue('name', 'Marcel')
+    }, [])
 
     return (
         <View style = { styles.container }>

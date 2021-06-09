@@ -4,25 +4,25 @@ import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-nati
 
 import { IHobby, Hobby } from '../Hobby'
 
-export interface IHobbiesWithDomain {
-    title: string,
-    activities: IHobby[]
+export interface IHobbiesWithCategory {
+    category: string,
+    hobbies: IHobby[]
 }
 
 export interface SetChosenHobbies {
-    addHobby: (id: number) => void,
-    removeHobby: (id: number) => void
+    addHobby: (_id: string) => void,
+    removeHobby: (_id: string) => void
 }
 
-export const HobbiesWithDomain: React.FC <IHobbiesWithDomain & SetChosenHobbies> = ({ title, activities, addHobby, removeHobby }) => {
+export const HobbiesWithCategory: React.FC <IHobbiesWithCategory & SetChosenHobbies> = ({ category, hobbies, addHobby, removeHobby }) => {
 
     return (
         <View style = { styles.container }>
-            <Text style = { styles.title }>{ title }</Text>
+            <Text style = { styles.title }>{ category }</Text>
 
             <ScrollView horizontal = { true } style = { styles.activities }>
                 {
-                    activities.map((hobby, index) => (
+                    hobbies.map((hobby, index) => (
                         <Hobby key = { index } addHobby = { addHobby } removeHobby = { removeHobby } { ...hobby}  />
                     ))
                 }
@@ -33,13 +33,14 @@ export const HobbiesWithDomain: React.FC <IHobbiesWithDomain & SetChosenHobbies>
 
 const styles = StyleSheet.create({
     container: {
-        
+        marginTop: 16,
     },
 
     title: {
         color: 'white',
         fontWeight: 'bold',
-        fontSize: 24
+        fontSize: 24,
+        marginBottom: 8,
     },
 
     item: {

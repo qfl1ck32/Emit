@@ -33,8 +33,8 @@ export const Setup: React.FC <{}> = () => {
             } }>
 
                 <SetupStack.Screen name = 'SetupName' component = { SetupName } />
-                <SetupStack.Screen name = 'SetupPicture' component = { SetupPicture } />
                 <SetupStack.Screen name = 'SetupHobbies' component = { SetupHobbies } />
+                <SetupStack.Screen name = 'SetupPicture' component = { SetupPicture } />
                 <SetupStack.Screen name = 'DoneSetup' component = { DoneSetup } />
 
             </SetupStack.Navigator>

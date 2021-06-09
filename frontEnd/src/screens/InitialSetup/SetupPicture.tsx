@@ -4,13 +4,20 @@ import { View, Image, Button, StyleSheet } from 'react-native'
 
 import * as Animatable from 'react-native-animatable'
 
-const duck = require('../../assets/images/duck.jpg')
-
 import * as ImagePicker from 'expo-image-picker'
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator'
 
 import { store } from './store'
 import { SetupNavigationProps } from './interfaces'
 import { ActionType } from './ActionType'
+
+const duck = require('../../assets/images/duck.jpg')
+
+import { setup } from '../../services'
+
+interface ImagePickerResult {
+    uri: string
+}
 
 export const SetupPicture = ({ navigation }: SetupNavigationProps <'SetupPicture'>) => {
 
@@ -18,25 +25,47 @@ export const SetupPicture = ({ navigation }: SetupNavigationProps <'SetupPicture
 
     const [image, setImage] = useState <string> (duckImage)
 
-    const onSubmitPress = () => {
-        store.dispatch({
-            type: ActionType.SET_PICTURE,
-            picture: image
+    const saveImagePickerResult = async (result: ImagePicker.ImagePickerResult) => {
+        const { uri } = result as ImagePickerResult
+
+        const { base64 } = await manipulateAsync(uri, [
+            {
+                resize: { height: 200, width: 200 }
+            }
+        ],
+        {
+            format: SaveFormat.JPEG,
+            base64: true
         })
 
-        navigation.navigate('DoneSetup')
+        setImage(base64 as string)
     }
 
-    const handleCamera = () => {
-        ImagePicker.launchCameraAsync().then((res: any) => {
-            setImage(res.uri)
+    const imagePickerSettings = {
+        base64: true,
+        quality: 0.8,
+        allowsEditing: true,
+        
+    } as ImagePicker.ImagePickerOptions
+
+    const onSubmitPress = () => {
+        store.dispatch({
+            type: ActionType.SET_IMAGE,
+            image: image == duckImage ? null : image
         })
+
+        setup(store.getState())
+
+        // navigation.navigate('DoneSetup')
+    }
+
+    //FIXME add some kind of error handling
+    const handleCamera = () => {
+        ImagePicker.launchCameraAsync(imagePickerSettings).then(saveImagePickerResult).catch()
     }
 
     const handleGallery = () => {
-        ImagePicker.launchImageLibraryAsync().then((res: any) => {
-            setImage(res.uri)
-        })
+        ImagePicker.launchImageLibraryAsync(imagePickerSettings).then(saveImagePickerResult).catch()
     }
 
     return (
@@ -45,7 +74,7 @@ export const SetupPicture = ({ navigation }: SetupNavigationProps <'SetupPicture
             <Animatable.View animation = 'fadeInUpBig' duration = { 800 } style = { styles.footer } >
 
                 <View style = { styles.image }>
-                    <Image source = { { uri: image } } style = { { width: 200, height: 200 } } />
+                    <Image source = { { uri: image == duckImage ? duckImage : `data:image/png;base64,${image}` } } style = { { width: 200, height: 200 } } />
                 </View>
 
                 <View style = { styles.buttons }>

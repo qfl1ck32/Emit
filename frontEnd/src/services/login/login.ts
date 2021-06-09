@@ -1,8 +1,9 @@
-import { client, LOGIN } from '../../graphql'
+import { client } from '../../graphql/client'
+import { LOGIN } from '../../graphql/mutations'
 
 import { setItemAsync } from 'expo-secure-store'
-import rootStore from '../../APIs/Root/store'
-import { ActionType } from '../../APIs/Root/ActionType'
+import rootStore from '../../Root/store'
+import { ActionType } from '../../Root/ActionType'
 
 export const login = async(username: string, password: string) => {
     const { errors, data } = await client.mutate({

@@ -1,10 +1,16 @@
 export default /* GraphQL */ `
 extend type Query {
-    Hobbies: [Hobby]
+    hobbiesFind: [Hobby]
 }
 
 type Hobby {
-    title: String
-    activities: [String]
+    _id: ID!
+    category: String!
+    hobbies: [HobbyActivity]!
+}
+
+type HobbyActivity {
+    _id: ID!
+    title: String!
 }
 `

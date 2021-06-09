@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-import { View, Text, Button, StyleSheet, FlatList } from 'react-native'
+import { View, Text, Button, StyleSheet } from 'react-native'
 
 import * as Animatable from 'react-native-animatable'
 
@@ -8,17 +8,16 @@ import { store } from './store'
 import { SetupNavigationProps } from './interfaces'
 import { ActionType } from './ActionType'
 
-import { HobbiesWithDomain, IHobbiesWithDomain } from '../../components/HobbiesWithDomain'
+import { HobbiesWithCategory, IHobbiesWithCategory } from '../../components/HobbiesWithCategory'
 
 import { useQuery } from '@apollo/react-hooks'
 import { GET_HOBBIES } from '../../graphql'
 
 export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>) => {
 
-    const [chosenHobbies, setChosenHobbies] = useState <number[]> ([])
+    const [chosenHobbies, setChosenHobbies] = useState <string[]> ([])
 
-    const { data: hobbies, error } = useQuery <{ "Hobbies": IHobbiesWithDomain[] }> (GET_HOBBIES)
-
+    const { data: hobbies, loading } = useQuery <{ "hobbiesFind": IHobbiesWithCategory[] }> (GET_HOBBIES)
 
     const onSubmit = () => {
         store.dispatch({
@@ -29,12 +28,16 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
         navigation.navigate('SetupPicture')
     }
 
-    const chooseHobby = (id: number) => {
-        setChosenHobbies(prevHobbies => prevHobbies.concat(id))
+    const chooseHobby = (_id: string) => {
+        setChosenHobbies(prevHobbies => prevHobbies.concat(_id))
     }
 
-    const unchooseHobby = (id: number) => {
-        setChosenHobbies(prevHobbies => prevHobbies.filter(itemId => itemId !== id))
+    const unchooseHobby = (_id: string) => {
+        setChosenHobbies(prevHobbies => prevHobbies.filter(item_id => item_id !== _id))
+    }
+
+    if (loading) {
+        return null
     }
 
     return (
@@ -44,11 +47,10 @@ export const SetupHobbies = ({ navigation }: SetupNavigationProps <'SetupName'>)
                 <Text style = { styles.textHeader }>Complete your profile</Text>
             </View>
 
-
             <Animatable.View animation = 'fadeInUpBig' duration = { 500 } style = { styles.footer } >
 
-            { hobbies?.Hobbies.map((hobby, index) => (
-                    <HobbiesWithDomain key = { index } addHobby = { chooseHobby } removeHobby = { unchooseHobby } { ...hobby } />
+            { hobbies?.hobbiesFind.map((hobby, index) => (
+                    <HobbiesWithCategory key = { index } addHobby = { chooseHobby } removeHobby = { unchooseHobby } { ...hobby } />
                 ))
             }
 
