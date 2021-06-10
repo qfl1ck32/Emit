@@ -1,4 +1,4 @@
-from random import shuffle
+from random import *
 from pickle import dumps, loads
 from multiprocessing import Lock, Semaphore
 
@@ -16,8 +16,6 @@ class Node:
 class BKtree:
 
     classLock = Lock()
-
-    # TODO: search cache implementation
 
     @staticmethod
     def save(tree, filename):
@@ -75,6 +73,24 @@ class BKtree:
         self.waitingQueue = Semaphore(1)
 
         self.rCnt = 0
+
+    def __getstate__(self):
+
+        state = self.__dict__.copy()
+
+        del state['treeLock']
+        del state['rCntLock']
+        del state['waitingQueue']
+
+        return state
+
+    def __setstate__(self, state):
+
+        self.__dict__.update(state)
+
+        self.treeLock = Lock()
+        self.rCntLock = Lock()
+        self.waitingQueue = Semaphore(1)
 
     def insert(self, strToInsert, dbId):
 
@@ -163,7 +179,7 @@ class BKtree:
 
         # ---- END SYNC ----
 
-        foundList = []  # [(nume, distanta, {dbid1, dbid2, ...}), ...]
+        foundList = []  # [(nume, {dbid1, dbid2, ...}), ...]
 
         if self.root is not None:
 
@@ -224,60 +240,153 @@ class BKtree:
 
         # ---- END SYNC ----
 
+    @staticmethod
+    def test_bktree():
 
-def test_bktree():
+        f = open("bktestinput.txt", "r+")
+        inp = f.read().split()
 
-    f = open("bktestinput.txt", "r+")
-    inp = f.read().split()
+        names = []
 
-    names = []
+        dbidcnt = 0
 
-    dbidcnt = 0
+        for name in inp:
 
-    for name in inp:
+            i = 0
+            while i < len(name):
+                if not (ord('a') <= ord(name[i]) <= ord('z') or ord('A') <= ord(name[i]) <= ord('Z')):
+                    name = name[:i] + name[i + 1:]
+                    i -= 1
 
-        i = 0
-        while i < len(name):
-            if not (ord('a') <= ord(name[i]) <= ord('z') or ord('A') <= ord(name[i]) <= ord('Z')):
-                name = name[:i] + name[i + 1:]
-                i -= 1
+                i += 1
 
-            i += 1
+            if len(name) > 0:
+                names.append((name, dbidcnt))
+                dbidcnt += 1
 
-        if len(name) > 0:
-            names.append((name, dbidcnt))
-            dbidcnt += 1
+        f.close()
 
-    f.close()
+        shuffle(names)
 
-    shuffle(names)
+        '''g = open('bktestinput.txt', "w")
+        for n in names:
+            g.write(f"{n} ")
+        g.close()'''
 
-    '''g = open('bktestinput.txt', "w")
-    for n in names:
-        g.write(f"{n} ")
-    g.close()'''
+        bktree = BKtree()
 
-    bktree = BKtree()
+        for name, dbid in names:
+            bktree.insert(name, dbid)
 
-    for name, dbid in names:
-        bktree.insert(name, dbid)
+        testTuples = [("Calin", 1), ("Mihail", 2), ("Grig", 3), ("Iuia", 2)]
 
-    print(bktree.search("Calin", maxDistance=1))
-    print(bktree.search("Mihail", maxDistance=2))
-    print(bktree.search("Grig", maxDistance=3))
-    print(bktree.search("Iuia", maxDistance=2))
+        print("Started testing corectness of word distance\n")
+        for test in testTuples:
 
-    BKtree.save(bktree, "tree.bkt")
-    bktree2 = BKtree.load("tree.bkt")
+            print(f"Searching for words resembling {test[0]}, max Levenshtein distance {test[1]}")
+            foundList = bktree.search(test[0], test[1])
 
-    print(bktree2.search("Calin", maxDistance=1))
-    print(bktree2.search("Mihail", maxDistance=2))
-    print(bktree2.search("Grig", maxDistance=3))
-    print(bktree2.search("Iuia", maxDistance=2))
+            print(f"{len(foundList)} results found")
+            for found in foundList:
+
+                if BKtree.LevenshteinDistance(test[0], found[0]) > test[1]:
+                    print(f"Wrong example found: {found[0]} for searched word: {test[0]}")
+                    return
+
+            print("Example passed\n")
+
+        print("Testing save and load in file\n")
+
+        BKtree.save(bktree, "tree.bkt")
+        bktree2 = BKtree.load("tree.bkt")
+
+        print("Data structure successfully loaded from file\n")
+        print("Testing again for word distance\n")
+
+        for test in testTuples:
+
+            print(f"Searching for words resembling {test[0]}, max Levenshtein distance {test[1]}")
+            foundList = bktree2.search(test[0], test[1])
+
+            print(f"{len(foundList)} results found")
+            for found in foundList:
+
+                if BKtree.LevenshteinDistance(test[0], found[0]) > test[1]:
+                    print(f"Wrong example found: {found[0]} for searched word: {test[0]}")
+                    return
+
+            print("Example passed\n")
+
+    @staticmethod
+    def test_bktree_rndtests(test_count):
+
+        for t in range(test_count):
+
+            print(f"-----------------------------------------------\nTest number {t}\n")
+
+            names = []
+
+            namesLen = randint(100, 10000)
+
+            chrs = [chr(i) for i in range(ord('a'), ord('z') + 1)] + \
+                   [chr(i) for i in range(ord('A'), ord('Z') + 1)]
+
+            for i in range(namesLen):
+
+                name = "".join([choice(chrs) for _ in range(randint(3, 8))])
+                names.append((name, i))
+
+            bktree = BKtree()
+
+            for name, dbid in names:
+                bktree.insert(name, dbid)
+
+            testTuplesLen = randint(5, 20)
+            testTuples = []
+
+            for _ in range(testTuplesLen):
+                testTuples.append(("".join([choice(chrs) for _ in range(randint(3, 8))]), randint(1, 5)))
+
+            print("Started testing corectness of word distance\n")
+            for test in testTuples:
+
+                print(f"Searching for words resembling {test[0]}, max Levenshtein distance {test[1]}")
+                foundList = bktree.search(test[0], test[1])
+
+                print(f"{len(foundList)} results found")
+                for found in foundList:
+
+                    if BKtree.LevenshteinDistance(test[0], found[0]) > test[1]:
+                        print(f"Wrong example found: {found[0]} for searched word: {test[0]}")
+                        return
+
+                print("Example passed\n")
+
+            print("Testing save and load in file\n")
+
+            BKtree.save(bktree, "treetest2.bkt")
+            bktree2 = BKtree.load("treetest2.bkt")
+
+            print("Data structure successfully loaded from file\n")
+            print("Testing again for word distance\n")
+
+            for test in testTuples:
+
+                print(f"Searching for words resembling {test[0]}, max Levenshtein distance {test[1]}")
+                foundList = bktree2.search(test[0], test[1])
+
+                print(f"{len(foundList)} results found")
+                for found in foundList:
+
+                    if BKtree.LevenshteinDistance(test[0], found[0]) > test[1]:
+                        print(f"Wrong example found: {found[0]} for searched word: {test[0]}")
+                        return
+
+                print("Example passed\n")
 
 
 if __name__ == '__main__':
-    test_bktree()
+    BKtree.test_bktree_rndtests(10)
 
 
 
