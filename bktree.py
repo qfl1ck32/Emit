@@ -386,7 +386,10 @@ class BKtree:
 
 
 if __name__ == '__main__':
+
     BKtree.test_bktree_rndtests(10)
+
+
 
 
 

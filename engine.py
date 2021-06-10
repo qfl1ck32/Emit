@@ -5,10 +5,10 @@ import math
 from multiprocessing import Process, Lock, Semaphore
 
 import ioSystem
-from bktree import BKtree
+from bktree import *
+
 
 # sursa de invatare / documentatie pentru Funk MF: https://towardsdatascience.com/recommendation-system-matrix-factorization-d61978660b4b
-
 
 # nu am metoda de stergere, chiar daca utilizatorul isi sterge contul,
 # algoritmului ii este util sa aiba ponderile in continuare
@@ -42,6 +42,26 @@ class Learner:
                         if R[user][item] > 0 and R[user][item] - numpy.dot(ml.P[user, :], ml.Q[:, item]) > maxDif:
                             maxDif = R[user][item] - numpy.dot(ml.P[user, :], ml.Q[:, item])
                 print(maxDif)
+
+    @staticmethod
+    def generateRtestMatrix():
+
+        file = open("Rmatrix.txt", "w")
+        for cnt in range(1000):
+
+            r = random.randint(3, 8)
+            featuresNon0 = random.sample(range(15), k=r)
+
+            fs = [0 for i in range(15)]
+            for f in featuresNon0:
+
+                fs[f] = random.random()
+                while fs[f] == 0:
+                    fs[f] = random.random()
+
+            for f in fs:
+                file.write(f"{round(f, 3)} ")
+            file.write('\n')
 
     @staticmethod
     def euclideanDistance(v1, v2):
@@ -508,7 +528,7 @@ class Recommender:
                                    stdRoundCnt=self.config["stdRoundCnt"],
                                    similarity=self.config["similarity"])
 
-            print(self.learner.factorizeMatrix())
+            # print(self.learner.factorizeMatrix())
 
     # generator, cate o instanta pt fiecare proces de request
     def getSimilarUsers(self, currentUserIndex):
@@ -550,15 +570,15 @@ class Recommender:
 
                 selectFrom = []
 
-                m1i = random.choice(range(len(M1)))
+                m1i = numpy.random.choice(range(len(M1)))
 
                 m2i = None
                 if len(M2) > 0:
-                    m2i = random.choice(range(len(M2)))
+                    m2i = numpy.random.choice(range(len(M2)))
 
                 m3i = None
                 if len(M3) > 0:
-                    m3i = random.choice(range(len(M3)))
+                    m3i = numpy.random.choice(range(len(M3)))
 
                 m1 = M1[m1i]
                 selectFrom = [m1] * 16
@@ -573,7 +593,7 @@ class Recommender:
                     m3 = M3[m3i]
                     selectFrom.append(m3)
 
-                selected = random.choice(selectFrom)
+                selected = choice(selectFrom)
                 if selected == m1:
                     M1.pop(m1i)
                 elif selected == m2:
@@ -662,7 +682,7 @@ class Recommender:
     def test_getSimilarUsers():
 
         simgen = recommender.getSimilarUsers(currentUserIndex=18)
-        print("here")
+
         for i in range(10):
 
             l = recommender.learner.R[18]
@@ -767,10 +787,10 @@ class Recommender:
 if __name__ == "__main__":
 
     recommender = Recommender("ConfigFile.json")
+    recommender.test_getSimilarUsers()
 
-    # recommender.test_getSimilarUsers()
-    # print('\n-------------------------\n')
-    # recommender.test2_getSimilarUsersByattr()
+
+
 
 
 
