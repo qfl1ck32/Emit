@@ -1,5 +1,5 @@
 {
-  "matrixOption": 3,
+  "matrixOption": 2,
   "updateThreshold": 100,
   "Rmatrix": "Rmatrix.txt",
   "Pmatrix": "Pmatrix.txt",
@@ -16,5 +16,9 @@
   "EUCLIDEAN_SimP1": 1.8,
   "EUCLIDEAN_SimP2": 1.5,
   "nameTreeFile": "recbktree.bkt",
-  "nameSearchMaxDist": 3
+  "nameSearchMaxDist": 3,
+  "SE_PORT": 11000,
+  "SE_ADDR": "localhost",
+  "MAX_QUEUE_SE_CONN": 100,
+  "SE_CONN_TIMEOUT": 5
 }
