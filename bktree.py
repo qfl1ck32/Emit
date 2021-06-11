@@ -1,6 +1,6 @@
 from random import *
 from pickle import dumps, loads
-from multiprocessing import Lock, Semaphore
+from threading import Lock, Semaphore
 
 
 class Node:
@@ -193,7 +193,7 @@ class BKtree:
 
                     d = self.distance(currentNode.name, strToSearch)
                     if d <= maxDistance:
-                        foundList.append((currentNode.name, currentNode.dbIds))
+                        foundList.append((currentNode.name, d, currentNode.dbIds))
 
                     for nextNode, dist in currentNode.nextNodes:
                         if nextNode.dbIds is not None and abs(dist - d) <= maxDistance:

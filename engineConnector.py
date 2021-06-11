@@ -3,7 +3,7 @@ import types
 from engine import *
 from ioSystem import getConfigOpts
 import socket
-from multiprocessing import Process
+from threading import Thread
 import logging
 import json
 
@@ -83,8 +83,12 @@ class Listen:
                     logging.info(f"Connection with {connAddr} closed")
                     return
 
+                logging.info(f"request received: {req}")
+
                 resGen, resCnt = self.parseReq(req)
                 conn.send(self.makeRes(resGen, resCnt))
+
+                logging.info(f"response delivered")
 
         except socket.timeout:
             logging.warning(f"Connection with {connAddr} timed out; connection closed")
@@ -109,10 +113,10 @@ class Listen:
 
                 logging.info(f"Connection with {connAddr} established")
 
-                connProc = Process(target=self.handleConnection, kwargs={'conn': conn, 'connAddr': connAddr})
-                self.conns.append((conn, connAddr, connProc))
+                connThr = Thread(target=self.handleConnection, kwargs={'conn': conn, 'connAddr': connAddr})
+                self.conns.append((conn, connAddr, connThr))
 
-                connProc.start()
+                connThr.start()
 
         except KeyboardInterrupt:
             self.sock.close()

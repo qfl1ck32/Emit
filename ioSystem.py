@@ -121,6 +121,12 @@ def getConfigOpts(inputFileName="ConfigFile.json"):
     return configOpts
 
 
+def saveConfigOpts(optsDict, outputFileName="ConfigFile.json"):
+
+    outputFile = open(outputFileName, "w")
+    outputFile.write(json.dumps(optsDict))
+
+
 # preia indecsii din matricea P(R) coresp persoanelor apropiate, in ordine de la cele mai apropiate la cele mai departate
 # va fi legat cu BD ul
 def getNearUsers(cnt, currentUserIndex):
