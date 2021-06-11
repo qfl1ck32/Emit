@@ -1,3 +1,5 @@
+import types
+
 from engine import *
 from ioSystem import getConfigOpts
 import socket
@@ -12,8 +14,8 @@ class Listen:
         'su': (Recommender.getSimilarUsers, 1),
         'suat': (Recommender.getSimilarUsersByattr, 2),
         'fn': (Recommender.findByName, 1),
-        'anu': (Recommender.addNewUser, 1),
-        'chu': (Recommender.changeUser, 2),
+        'anu': (Recommender.addNewUser, 3),
+        'chu': (Recommender.changeUser, 4),
     }
 
     def __init__(self, recommender):
@@ -39,16 +41,33 @@ class Listen:
 
         args = [self.recommender]
         for i in range(argcnt):
-            args.append(req[i])
+            args.append(req[str(i)])
 
-        gen = getGen(*args)
+        return getGen(*args), req['rescnt']
+
+    def makeRes(self, resGen, resCnt):
+
+        res = {}
+
+        if isinstance(resGen, types.GeneratorType):
+
+            for i in range(resCnt):
+
+                nextres = next(resGen)
+                if nextres is None:
+                    break
+
+                res.update({i: nextres})
+
+        else:
+            res.update({'resValue': resGen})
+
+        return json.dumps(res).encode('utf-8')
 
     def handleConnection(self, conn, connAddr):
 
         try:
-
             conn.settimeout(self.connTimeout)
-
             while True:
 
                 reqLen = conn.recv(2)
@@ -65,18 +84,10 @@ class Listen:
                     return
 
                 resGen, resCnt = self.parseReq(req)
-
-                res = {}
-                for i in range(resCnt):
-                    res.update({i: next(resGen)})
-
-                res = json.dumps(res)
-
-                conn.send(len(res))
-                conn.send(res)
+                conn.send(self.makeRes(resGen, resCnt))
 
         except socket.timeout:
-            logging.warning(f"Connection with {connAddr} timed out; connection closing...")
+            logging.warning(f"Connection with {connAddr} timed out; connection closed")
 
         except Exception as err:
             logging.warning(f"Error at connection with address {connAddr}: {err}; connection closing...")
@@ -87,6 +98,9 @@ class Listen:
         self.sock.bind((self.addr, self.port))
 
         self.sock.listen(self.maxConnQueue)
+
+        print("Listener ready for connections")
+        logging.info("Listener ready for connections")
 
         try:
             while True:
@@ -106,9 +120,11 @@ class Listen:
 
 if __name__ == '__main__':
 
-    logging.basicConfig(filename="SE_log.txt")
+    logging.basicConfig(filename="SE_log.txt", filemode="w", level=logging.DEBUG)
 
     recommender = Recommender("ConfigFile.json")
 
     listener = Listen(recommender)
     listener.listen()
+
+    logging.info("Listener is closed.")

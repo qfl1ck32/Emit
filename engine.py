@@ -3,12 +3,14 @@ import numpy
 import random
 import math
 from multiprocessing import Process, Lock, Semaphore
+import logging
 
 import ioSystem
 from bktree import *
 
 
-# sursa de invatare / documentatie pentru Funk MF: https://towardsdatascience.com/recommendation-system-matrix-factorization-d61978660b4b
+# sursa de invatare / documentatie pentru Funk MF:
+# https://towardsdatascience.com/recommendation-system-matrix-factorization-d61978660b4b
 
 # nu am metoda de stergere, chiar daca utilizatorul isi sterge contul,
 # algoritmului ii este util sa aiba ponderile in continuare
@@ -18,7 +20,7 @@ class Learner:
     PRINT_TESTING = True
 
     @staticmethod
-    def test1(TCNT):
+    def testRndRmatrix(TCNT):
 
         for i in range(TCNT):
 
@@ -259,7 +261,7 @@ class Learner:
 
             # ---- END SYNC ----
 
-            return returnStatus
+            return returnStatus, len(self.P) - 1
 
         else:  # cazul cand fac update doar la matricea R
             self.R = numpy.vstack([self.R, newRline])
@@ -269,6 +271,8 @@ class Learner:
             self.learnerLock.release()
 
             # ---- END SYNC ----
+
+            return "", len(self.R) - 1
 
     # !!!!!!!!!!!! mentine Q fixat !!!!!!!!!!!!!!!!!
     def changeUser(self, userIndex, updatedRline, roundCnt=None, learningRate=None, acceptanceThreshold=None, minProgress=None, matrixFactorized=None):
@@ -356,6 +360,8 @@ class Learner:
             self.learnerLock.release()
 
             # ---- END SYNC ----
+
+            return ""
 
     # !!!!!!!!! thread unsafe !!!!!!!!!!
     # returneaza efectiv coloana din self.R
@@ -482,6 +488,12 @@ class Recommender:
                                    stdRoundCnt=self.config["stdRoundCnt"],
                                    similarity=self.config["similarity"])
 
+            if userCnt >= self.config["updateThreshold"]:
+
+                logging.info("Factorizing R matrix...")
+                factLog = self.learner.factorizeMatrix()
+                logging.info(f"Factorizing matrix log: {factLog}")
+
         elif self.config["matrixOption"] == 1:
 
             userCnt, itemCnt, R = ioSystem.parseRmatrix()
@@ -528,10 +540,12 @@ class Recommender:
                                    stdRoundCnt=self.config["stdRoundCnt"],
                                    similarity=self.config["similarity"])
 
-            # print(self.learner.factorizeMatrix())
+            logging.info("Factorizing R matrix...")
+            factLog = self.learner.factorizeMatrix()
+            logging.info(f"Factorizing matrix log: {factLog}")
 
     # generator, cate o instanta pt fiecare proces de request
-    def getSimilarUsers(self, currentUserIndex):
+    def getSimilarUsers(self, currentUserIndex: list):
 
         simp1 = self.config[f"{self.config['similarity']}_SimP1"]
         simp2 = self.config[f"{self.config['similarity']}_SimP2"]
@@ -563,6 +577,10 @@ class Recommender:
 
                 else:
                     M3.append(userId)
+
+            if len(M1) == 0:
+                yield None
+                break
 
             # cat timp am persoane "cele mai similare" in acest batch
             # selectez cu probabilitatile descrise mai sus una dintre ele
@@ -604,7 +622,7 @@ class Recommender:
                 yield selected
 
     # generator, cate o instanta pt fiecare proces de request
-    def getSimilarUsersByattr(self, attributes, currentUserIndex):
+    def getSimilarUsersByattr(self, attributes: list, currentUserIndex: int):
 
         if isinstance(attributes, numpy.ndarray) is False:
             attributes = numpy.array(attributes)
@@ -626,11 +644,14 @@ class Recommender:
 
             M.sort(reverse=True)
 
+            if len(M) == 0:
+                yield None
+
             for rec in M:
                 yield rec
 
     # generator, cate o instanta pt fiecare proces de request
-    def findByName(self, nameToSearch):
+    def findByName(self, nameToSearch: str):
 
         while True:
 
@@ -644,12 +665,14 @@ class Recommender:
                 for dbId in dbIds:
                     yield dbId
 
-    def addNewUser(self, attributes):
+    def addNewUser(self, attributes: list, fullName: str, dbIndex: int):
+
+        # adaugare in matricea preferintelor
 
         if isinstance(attributes, numpy.ndarray) is False:
             attributes = numpy.array(attributes)
 
-        self.learner.addNewUser(newRline=attributes)
+        _, newUserIndex = self.learner.addNewUser(newRline=attributes)
 
         if self.config["matrixOption"] == 0 and self.learner.useFactorization is False:
 
@@ -671,12 +694,27 @@ class Recommender:
 
             # ---- END SYNC ----
 
-    def changeUser(self, userIndex, attributes):
+        # adaugare in arborele BK
+
+        self.nameFinder.insert(fullName, dbIndex)
+
+        return newUserIndex
+
+    def changeUser(self, userIndex: int, attributes: list, fullName: str, dbIndex: int):
+
+        # modificare in matricea preferintelor
 
         if isinstance(attributes, numpy.ndarray) is False:
             attributes = numpy.array(attributes)
 
         self.learner.changeUser(userIndex, attributes)
+
+        # modificare in arborele BK
+
+        self.nameFinder.delete(fullName, dbIndex)
+        self.nameFinder.insert(fullName, dbIndex)
+
+        return 'OK'
 
     @staticmethod
     def test_getSimilarUsers():
@@ -746,6 +784,11 @@ class Recommender:
         for i in range(10):
 
             recIndex = next(simgen)
+
+            if recIndex is None:
+                print("\nnici o persoana asemanatoare gasita")
+                return
+
             recl = recommender.learner.R[recIndex]
 
             print(*attr)
@@ -774,7 +817,7 @@ class Recommender:
 
             recl = recommender.learner.getRrow(recIndex)
 
-            print("diferentele intre activitatile votate dupa ML: ", end=' ')
+            print("\ndiferentele intre activitatile votate dupa ML: ", end=' ')
 
             for j in range(15):
                 if attr[j] == 0 or recl[j] == 0:
@@ -787,7 +830,8 @@ class Recommender:
 if __name__ == "__main__":
 
     recommender = Recommender("ConfigFile.json")
-    recommender.test_getSimilarUsers()
+    # recommender.test_getSimilarUsers()
+    recommender.test2_getSimilarUsersByattr()
 
 
 
