@@ -6,7 +6,8 @@ import {
     TouchableOpacity,
     Text,
     Keyboard,
-    Alert
+    Alert,
+    Button
 } from 'react-native'
 
 import { StyledInputWithController } from '../../components/StyledInputWithController'
@@ -20,7 +21,7 @@ import * as yup from 'yup'
 
 import { RootNavigationProps } from '../Root/interfaces'
 
-import { login } from '../../services'
+import { login, loginWithGoogle } from '../../services'
 
 export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen'> ) => {
 
@@ -50,6 +51,10 @@ export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen
 
         if (err)
             Alert.alert('Sign in', err)
+    }
+
+    const oAuthLogin = async () => {
+        loginWithGoogle()
     }
 
     const [passwordSettings, setPasswordSettings] = React.useState({
@@ -108,7 +113,7 @@ export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen
 
                     { ...formProps }
                 />
-
+   
                 <View style = { styles.button }>
                     <TouchableOpacity style = { styles.login } onPress = { onSubmitPress }>
                         <LinearGradient style = { styles.login } colors = { ['#3187be', '#0d5d90'] }>
@@ -118,6 +123,14 @@ export const Login = ( { navigation, route } : RootNavigationProps <'LoginScreen
 
                     <TouchableOpacity style = { [styles.login, styles.border] } onPress = { () => navigation.navigate('SignUpScreen') }>
                         <Text style = { [styles.textSign, { color: 'green' }] }>Sign up</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style = { styles.button }>
+                    <TouchableOpacity style = { styles.login } onPress = { oAuthLogin }>
+                        <LinearGradient style = { styles.login } colors = { ['#3187be', '#0d5d90'] }>
+                            <Text style = { styles.textSign }>Sign in with Google</Text>
+                        </LinearGradient>
                     </TouchableOpacity>
                 </View>
 
