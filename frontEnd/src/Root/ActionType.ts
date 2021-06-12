@@ -1,9 +1,17 @@
 export enum ActionType {
-    SIGN_IN = 0,
-    SIGN_UP = 1,
-    SIGN_OUT = 2,
-    
-    RESTORE_TOKENS = 3,
+  SIGN_IN = 0,
+  SIGN_UP = 1,
+  SIGN_OUT = 2,
 
-    UPDATE_ACCESS_TOKEN = 4
+  RESTORE_TOKENS = 3,
+
+  UPDATE_ACCESS_TOKEN = 4,
+
+  SETUP_PROFILE = 5,
+
+  ADD_TO_WHITELIST = 6,
+  ADD_TO_BLACKLIST = 7,
+
+  REMOVE_FROM_WHITELIST = 8,
+  REMOVE_FROM_BLACKLIST = 9,
 }

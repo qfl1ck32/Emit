@@ -1,3 +1,4 @@
-export * from './PasswordStrengthMeter'
-export * from './StyledInputWithController'
-export * from './HobbiesWithCategory'
+export * from "./PasswordStrengthMeter";
+export * from "./StyledInputWithController";
+export * from "./HobbiesWithCategory";
+export * from "./UserInfo";

@@ -1,73 +1,65 @@
-import React from 'react'
+import React from "react";
 
-import { Root } from './src/screens/Root'
-import { Setup } from './src/screens/InitialSetup/Setup'
-import { MainTab } from './src/screens/MainTab'
+import { Root } from "./src/screens/Root";
+import { Setup } from "./src/screens/InitialSetup/Setup";
+import { MainTab } from "./src/screens/MainTab";
 
-import * as SecureStore from 'expo-secure-store'
+import * as SecureStore from "expo-secure-store";
 
-import { connect, Provider } from 'react-redux'
-import rootStore, { ReducerState } from './src/Root/store'
+import { connect, Provider } from "react-redux";
+import rootStore, { ReducerState } from "./src/Root/store";
 
-import { ApolloProvider } from '@apollo/client'
+import { ApolloProvider } from "@apollo/client";
 
-import { ActionType } from './src/Root/ActionType'
+import { ActionType } from "./src/Root/ActionType";
 
-import { client } from './src/graphql/client'
+import { client } from "./src/graphql/client";
 
 const App = () => {
-
   React.useEffect(() => {
     const bootstrapAsync = async () => {
-
-      // await checkAuthenticated() //FIXME is this needed in any way?
-
-      const accessToken = await SecureStore.getItemAsync('accessToken')
-      const refreshToken = await SecureStore.getItemAsync('refreshToken')
+      const accessToken = await SecureStore.getItemAsync("accessToken");
+      const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
       return rootStore.dispatch({
-          type: ActionType.RESTORE_TOKENS,
-          tokens: !(accessToken && refreshToken) ? null : {
-            accessToken,
-            refreshToken
-          }
-      })
-    }
+        type: ActionType.RESTORE_TOKENS,
+        tokens: !(accessToken && refreshToken)
+          ? null
+          : {
+              accessToken,
+              refreshToken,
+            },
+      });
+    };
 
-    bootstrapAsync()
-}, [])
+    bootstrapAsync();
+  }, []);
 
   return (
-    <Provider store = { rootStore }>
-      <ApolloProvider client = { client }>
-        <RootX  />
+    <Provider store={rootStore}>
+      <ApolloProvider client={client}>
+        <RootX tokens={null} user={{}} />
       </ApolloProvider>
     </Provider>
-  )
-}
+  );
+};
 
 const RootNavigation = (props: ReducerState) => {
-
   if (props.isLoading) {
-    return null
-  }
-  
-  if (props.userTokens === null) {
-    return <Root />
+    return null;
   }
 
-  if (props.isSetUp === false) {
-    return <Setup />
+  if (props.tokens === null) {
+    return <Root />;
   }
-  
-  return (
-    props.userTokens === null ?
-      <Root />
-    : 
-      <MainTab />
-  )
-}
 
-const RootX = connect(state => state)(RootNavigation)
+  if (props.user?.isSetUp === false) {
+    return <Setup />;
+  }
 
-export default App
+  return props.tokens === null ? <Root /> : <MainTab />;
+};
+
+const RootX = connect((state) => state)(RootNavigation);
+
+export default App;

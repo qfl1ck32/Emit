@@ -1,69 +1,95 @@
-import { setItemAsync } from 'expo-secure-store'
-import { createStore } from 'redux'
-import { ActionType } from './ActionType'
+import { createStore } from "redux";
+import { User } from "../graphql/types/User/User";
+import { ActionType } from "./ActionType";
 
 export interface ReducerState {
-    isLoading?: boolean,
-    isSignout?: boolean,
-    userTokens?: null | {
-      accessToken: string,
-      refreshToken: string
-    },
-    isSetUp?: boolean
+  isLoading?: boolean;
+
+  tokens: null | {
+    accessToken: string;
+    refreshToken: string;
+  };
+
+  user: Partial<User>;
 }
 
 type ReducerAction = {
-    type: ActionType,
-    tokens: null | {
-      accessToken: string,
-      refreshToken?: string
-    },
-    isSetUp?: boolean
-}
+  type: ActionType;
+
+  tokens?: null | {
+    accessToken: string;
+    refreshToken?: string;
+  };
+
+  user?: Partial<User>;
+
+  userId?: string;
+};
 
 const initialState: ReducerState = {
-    isLoading: true,
-    userTokens: null,
-    isSetUp: false
-}
+  isLoading: true,
+  tokens: null,
+  user: {},
+};
 
 const reducer = (prevState: any, action: ReducerAction): ReducerState => {
-    switch(action.type) {
-        case ActionType.RESTORE_TOKENS:
-            return {
-                ...prevState,
-                userTokens: action.tokens,
-                isLoading: false
-            }
+  switch (action.type) {
+    case ActionType.RESTORE_TOKENS:
+      return {
+        ...prevState,
+        tokens: action.tokens,
+        isLoading: false,
+      };
 
-        case ActionType.SIGN_IN:
-            return {
-                ...prevState,
-                userTokens: action.tokens,
-                isSetUp: action.isSetUp
-            }
+    case ActionType.SIGN_IN:
+      console.log(action.user);
+      return {
+        ...prevState,
+        tokens: action.tokens,
+        user: action.user,
+      };
 
-        case ActionType.SIGN_OUT:
-            return {
-                ...prevState,
-                userTokens: null
-            }
+    case ActionType.SIGN_OUT:
+      return {
+        ...prevState,
+        tokens: null,
+      };
 
-        case ActionType.UPDATE_ACCESS_TOKEN:
+    case ActionType.UPDATE_ACCESS_TOKEN:
+      return {
+        ...prevState,
+        tokens: {
+          accessToken: action.tokens?.accessToken,
+          refreshToken: prevState.userTokens?.refreshToken,
+        },
+      };
 
-            return {
-                ...prevState,
-                userTokens: {
-                    accessToken: action.tokens?.accessToken,
-                    refreshToken: prevState.userTokens?.refreshToken
-                }
-            }
+    case ActionType.SETUP_PROFILE:
+      return {
+        ...prevState,
+        user: {
+          isSetUp: true,
+        },
+      };
 
-        default:
-            return prevState
-    }
-}
+    case ActionType.ADD_TO_WHITELIST:
+      const whitelist = prevState.user.whitelist as string[];
 
-export const rootStore = createStore(reducer, initialState)
+      console.log(prevState);
 
-export default rootStore
+      return {
+        ...prevState,
+        user: {
+          ...prevState.user,
+          whitelist: whitelist.concat(action.userId as string),
+        },
+      };
+
+    default:
+      return prevState;
+  }
+};
+
+export const rootStore = createStore(reducer, initialState);
+
+export default rootStore;

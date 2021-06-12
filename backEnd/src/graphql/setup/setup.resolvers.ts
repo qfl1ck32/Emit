@@ -1,18 +1,53 @@
+import { HobbyModel, IUser, UserModel } from "../../models";
+import { SomethingWrongHappened } from "../register/errors";
+import { ObjectId } from "mongodb";
+
+import {
+  seReq,
+  makeAddNewUserReq,
+  makeChUserReq,
+  makeFindByNameReq,
+  makeSimUserByattrReq,
+  makeSimUserReq,
+} from "../../searchEngine/helpers";
+import { UserNotExists } from "../login/errors";
+
 interface ISetup {
-    input: {
-        name: string,
-        hobbies: string[],
-        image: null | string
-    }
+  input: {
+    name: string;
+    hobbies: string[];
+    image: null | string;
+  };
 }
 
-//FIXME add logic
 export default {
-    Mutation: {
-        setup: async (_: any, data, _3: any) => {
-            const { input: { name, hobbies, image } } = data as ISetup
+  Mutation: {
+    setup: async (_: any, data: ISetup, context: { user: IUser }) => {
+      const {
+        input: { name, hobbies, image },
+      } = data;
 
-            return true
+      const { user } = context;
+
+      if (!user) {
+        throw new SomethingWrongHappened();
+      }
+
+      const { _id } = user;
+
+      await UserModel.findOneAndUpdate(
+        {
+          _id,
+        },
+        {
+          hobbies: hobbies.map((_id) => new ObjectId(_id)),
+          name,
+          isSetUp: true,
+          image,
         }
-    }
-}
+      );
+
+      return true;
+    },
+  },
+};
