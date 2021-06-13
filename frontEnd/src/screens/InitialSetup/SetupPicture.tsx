@@ -35,7 +35,7 @@ export const SetupPicture = ({
       uri,
       [
         {
-          resize: { height: 64, width: 64 },
+          resize: { height: 128, width: 128 },
         },
       ],
       {
@@ -49,7 +49,7 @@ export const SetupPicture = ({
 
   const imagePickerSettings = {
     base64: true,
-    quality: 0.5,
+    quality: 0.8,
     allowsEditing: true,
   } as ImagePicker.ImagePickerOptions;
 
@@ -91,7 +91,7 @@ export const SetupPicture = ({
                   ? duckImage
                   : `data:image/png;base64,${image}`,
             }}
-            style={{ width: 200, height: 200 }}
+            style={{ width: 128, height: 128 }}
           />
         </View>
 

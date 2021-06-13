@@ -1,27 +1,9 @@
-import { IUser, UserModel } from "../../models";
+import { HobbyModel, IUser, UserModel } from "../../models";
 import { NotAuthenticated } from "../hobbies/errors";
 import { ObjectId } from "mongodb";
 
 export default {
   Query: {
-    getUserImage: (_: any, _2: any, _3: any) => {
-      return [];
-    },
-
-    getMyImage: async (_: any, _2: any, context: { user: IUser }) => {
-      const { user } = context;
-
-      if (!user) {
-        throw new NotAuthenticated();
-      }
-
-      const { _id } = user;
-
-      const { image } = await UserModel.findById(_id);
-
-      return image;
-    },
-
     getAllUsers: async (_: any, _2: any, context: { user: IUser }) => {
       const { user: currentUser } = context;
 
@@ -34,6 +16,19 @@ export default {
       );
 
       return users;
+    },
+
+    getUser: async (_: any, data: { id: string }, context: { user: IUser }) => {
+      const { user } = context;
+      const { id } = data;
+
+      if (!user) {
+        throw new NotAuthenticated();
+      }
+
+      const dbUser = await UserModel.findById(id);
+
+      return dbUser || null;
     },
   },
 
@@ -62,6 +57,96 @@ export default {
       });
 
       return true;
+    },
+
+    removeFromWhitelist: async (
+      _: any,
+      data: { id: string },
+      context: { user: IUser }
+    ) => {
+      const { user } = context;
+
+      if (!user) {
+        throw new NotAuthenticated();
+      }
+
+      const { _id: currentUserId } = user;
+
+      const { id } = data;
+
+      const { whitelist } = await UserModel.findById({
+        _id: new ObjectId(currentUserId),
+      });
+
+      await UserModel.findByIdAndUpdate(currentUserId, {
+        whitelist: whitelist.filter((id) => id !== id),
+      });
+
+      return true;
+    },
+
+    addToBlacklist: async (
+      _: any,
+      data: { id: string },
+      context: { user: IUser }
+    ) => {
+      const { user } = context;
+
+      if (!user) {
+        throw new NotAuthenticated();
+      }
+
+      const { _id: currentUserId } = user;
+
+      const { id } = data;
+
+      const { blacklist } = await UserModel.findById({
+        _id: new ObjectId(currentUserId),
+      });
+
+      await UserModel.findByIdAndUpdate(currentUserId, {
+        blacklist: blacklist.concat(new ObjectId(id)),
+      });
+
+      return true;
+    },
+
+    removeFromBlacklist: async (
+      _: any,
+      data: { id: string },
+      context: { user: IUser }
+    ) => {
+      const { user } = context;
+
+      if (!user) {
+        throw new NotAuthenticated();
+      }
+
+      const { _id: currentUserId } = user;
+
+      const { id } = data;
+
+      const { blacklist } = await UserModel.findById({
+        _id: new ObjectId(currentUserId),
+      });
+
+      await UserModel.findByIdAndUpdate(currentUserId, {
+        blacklist: blacklist.filter((id) => id !== id),
+      });
+
+      return true;
+    },
+  },
+
+  User: {
+    hobbies: async (root: IUser, _: any, _2: any) => {
+      const { hobbies } = root;
+
+      const dbHobbies = await HobbyModel.find();
+
+      return dbHobbies.filter((hobby) =>
+        hobbies.includes(new ObjectId(hobby._id))
+      );
     },
   },
 };

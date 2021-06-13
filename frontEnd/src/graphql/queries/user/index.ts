@@ -1,2 +1,2 @@
-export * from "./getMyImage";
+export * from "./getUser";
 export * from "./getAllUsers";

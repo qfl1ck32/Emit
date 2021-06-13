@@ -6,4 +6,5 @@ export interface User {
   image: string | null;
   whitelist: string[];
   blacklist: string[];
+  hobbies: { title: string }[];
 }

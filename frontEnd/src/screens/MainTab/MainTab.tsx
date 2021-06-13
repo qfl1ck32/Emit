@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -6,12 +6,13 @@ import { StyleSheet } from "react-native";
 
 import { Home } from "../Home";
 import { Emit } from "../Emit";
-import { Profile } from "../Profile";
+import { Profile, ProfileStack } from "../Profile";
 import { Settings } from "../Settings";
 
 import { NavigationContainer } from "@react-navigation/native";
+import { MainTabParamList } from "./interfaces";
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTab: React.FC<{}> = () => {
   const materialIconProps = {
@@ -39,6 +40,13 @@ export const MainTab: React.FC<{}> = () => {
             ),
           }}
         />
+
+        <Tab.Screen
+          name="ProfileStack"
+          component={ProfileStack}
+          options={{ tabBarButton: () => null }}
+        />
+
         <Tab.Screen
           name="Emit"
           component={Emit}
@@ -50,10 +58,10 @@ export const MainTab: React.FC<{}> = () => {
           }}
         />
         <Tab.Screen
-          name="Profile"
+          name="MyProfile"
           component={Profile}
           options={{
-            tabBarLabel: "Profile",
+            tabBarLabel: "My profile",
             tabBarIcon: () => (
               <MaterialIcons name="person" {...materialIconProps} />
             ),
@@ -73,30 +81,3 @@ export const MainTab: React.FC<{}> = () => {
     </NavigationContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#2a8fd0",
-  },
-
-  header: {
-    flex: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  button: {
-    alignItems: "flex-end",
-    marginTop: 30,
-  },
-
-  text: {
-    color: "white",
-    fontWeight: "bold",
-  },
-
-  largerText: {
-    fontSize: 24,
-  },
-});

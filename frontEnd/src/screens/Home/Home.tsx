@@ -1,43 +1,43 @@
 import { useQuery } from "@apollo/client";
 import React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Text } from "react-native";
 import { connect } from "react-redux";
-import { UserInfo } from "../../components";
-import { client } from "../../graphql";
-import { ADD_TO_WHITELIST } from "../../graphql/mutations/user";
+import { Loading, UserInfo } from "../../components";
 import { GET_ALL_USERS } from "../../graphql/queries/user/getAllUsers";
 import { User } from "../../graphql/types/User/User";
-import { ActionType, rootStore } from "../../Root";
+import { MainTabNavigationProps } from "../MainTab/interfaces";
 
-export const HomeComponent: React.FC<{}> = () => {
+export const HomeComponent: React.FC<MainTabNavigationProps<"Home">> = ({
+  navigation,
+}) => {
   const { data, loading, error } = useQuery(GET_ALL_USERS);
 
-  const addToWhitelist = async (id: string) => {
-    await client.mutate({
-      mutation: ADD_TO_WHITELIST,
-      variables: {
+  const users = data?.getAllUsers as User[];
+
+  const userOnClick = (id: string) => {
+    navigation.navigate("ProfileStack", {
+      screen: "Profile",
+      params: {
         id,
       },
     });
-
-    rootStore.dispatch({
-      type: ActionType.ADD_TO_WHITELIST,
-      userId: id,
-    });
   };
-
-  const users = data?.getAllUsers as User[];
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <ScrollView style={styles.scrollView}>
-          {!loading &&
-            !error &&
-            users.map((user, index) => (
-              <UserInfo addToWhitelist={addToWhitelist} key={index} {...user} />
-            ))}
-        </ScrollView>
+        {loading || error ? (
+          <Loading />
+        ) : (
+          <View>
+            <Text style={styles.textHeader}>Users</Text>
+            <ScrollView style={styles.scrollView}>
+              {users.map((user, index) => (
+                <UserInfo key={index} {...user} userOnClick={userOnClick} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -57,69 +57,16 @@ const styles = StyleSheet.create({
 
   scrollView: {
     flex: 1,
-    borderColor: "red",
-    borderWidth: 2,
-    flexGrow: 1,
-    marginTop: 128,
-    marginBottom: 128,
+    marginTop: 64,
+    marginBottom: 48,
     width: "90%",
-  },
-
-  footer: {
-    flex: 3,
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingHorizontal: 20,
-    paddingVertical: 30,
   },
 
   textHeader: {
     color: "#FFF",
     fontWeight: "bold",
     fontSize: 30,
-  },
-
-  textSign: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-  },
-
-  textFooter: {
-    color: "#05375a",
-    fontSize: 18,
-  },
-
-  login: {
-    width: "100%",
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-  },
-
-  button: {
-    alignItems: "center",
-    marginTop: 15,
-  },
-
-  error: {
-    color: "red",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-
-  message: {
-    textAlign: "center",
-    flex: 0,
-    marginTop: 15,
-  },
-
-  border: {
-    borderColor: "#009387",
-    borderWidth: 1,
-    marginTop: 15,
+    paddingTop: 64,
   },
 });
 

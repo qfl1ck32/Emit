@@ -8,6 +8,7 @@ export const LOGIN = gql`
         refreshToken
       }
       user {
+        _id
         email
         isSetUp
         whitelist

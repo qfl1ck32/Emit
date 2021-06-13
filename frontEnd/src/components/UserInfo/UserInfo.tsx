@@ -9,42 +9,27 @@ import {
 } from "react-native";
 import React from "react";
 import { rootStore } from "../../Root";
+import { LinearGradient } from "expo-linear-gradient";
 
-interface UserMethods {
-  addToWhitelist: (id: string) => void;
+interface UserInfoMethod {
+  userOnClick: (id: string) => void;
 }
 
 export const UserInfo = ({
   username,
   image,
   _id,
-  addToWhitelist,
-}: IUser & UserMethods) => {
-  const user = rootStore.getState().user;
-
-  const { whitelist, blacklist } = user;
-
-  const isInWhitelist = whitelist?.includes(_id);
-  const isInBlacklist = blacklist?.includes(_id);
-
+  userOnClick,
+}: IUser & UserInfoMethod) => {
   return (
-    <TouchableOpacity>
-      <View style={styles.container}>
-        <Image
-          style={styles.image}
-          source={{
-            uri: `data:image/jpg;base64,${image}`,
-          }}
-        />
-        <Text style={styles.name}>{username}</Text>
-
-        {!isInWhitelist && (
-          <Button
-            onPress={() => addToWhitelist(_id)}
-            title="Add to whitelist"
-          />
-        )}
-      </View>
+    <TouchableOpacity onPress={() => userOnClick(_id)} style={styles.container}>
+      <Image
+        style={styles.image}
+        source={{
+          uri: `data:image/jpg;base64,${image}`,
+        }}
+      />
+      <Text style={styles.name}>{username}</Text>
     </TouchableOpacity>
   );
 };
@@ -53,6 +38,10 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     marginBottom: 18,
+    borderColor: "white",
+    borderRadius: 8,
+    borderWidth: 2,
+    padding: 2,
   },
 
   name: {
@@ -63,11 +52,11 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: 64,
-    height: 64,
+    width: 48,
+    height: 48,
     borderRadius: 50,
     overflow: "hidden",
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "white",
   },
 });

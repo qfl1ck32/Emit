@@ -9,8 +9,7 @@ import { Database } from "./Database";
 
 import { ApolloServer } from "apollo-server-express";
 import { schema } from "./graphql/schema";
-import { addMock } from "./models/User";
-// import { addMock } from "./services/Hobby";
+import { addMock } from "./services/User";
 
 config({
   path: resolve(__dirname, "env"),
@@ -56,6 +55,5 @@ app.get("/confirmEmail", confirmEmail);
 
 app.listen(port, async () => {
   console.log(`Listening on port ${port}.`);
-  // addMock()
   // addMock();
 });

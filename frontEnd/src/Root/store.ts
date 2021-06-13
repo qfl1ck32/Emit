@@ -42,7 +42,6 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
       };
 
     case ActionType.SIGN_IN:
-      console.log(action.user);
       return {
         ...prevState,
         tokens: action.tokens,
@@ -72,10 +71,8 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
         },
       };
 
-    case ActionType.ADD_TO_WHITELIST:
+    case ActionType.ADD_TO_WHITELIST: {
       const whitelist = prevState.user.whitelist as string[];
-
-      console.log(prevState);
 
       return {
         ...prevState,
@@ -84,6 +81,43 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
           whitelist: whitelist.concat(action.userId as string),
         },
       };
+    }
+
+    case ActionType.REMOVE_FROM_WHITELIST: {
+      const whitelist = prevState.user.whitelist as string[];
+
+      return {
+        ...prevState,
+        user: {
+          ...prevState.user,
+          whitelist: whitelist.filter((id) => id !== action.userId),
+        },
+      };
+    }
+
+    case ActionType.ADD_TO_BLACKLIST: {
+      const blacklist = prevState.user.blacklist as string[];
+
+      return {
+        ...prevState,
+        user: {
+          ...prevState.user,
+          blacklist: blacklist.concat(action.userId as string),
+        },
+      };
+    }
+
+    case ActionType.REMOVE_FROM_BLACKLIST: {
+      const blacklist = prevState.user.blacklist as string[];
+
+      return {
+        ...prevState,
+        user: {
+          ...prevState.user,
+          blacklist: blacklist.filter((id) => id !== action.userId),
+        },
+      };
+    }
 
     default:
       return prevState;

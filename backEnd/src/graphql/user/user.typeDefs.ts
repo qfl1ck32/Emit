@@ -1,7 +1,6 @@
 export default /* GraphQL */ `
   extend type Query {
-    getUserImage(id: ID!): String!
-    getMyImage: String!
+    getUser(id: ID!): User
     getAllUsers: [User]
   }
 
@@ -20,5 +19,6 @@ export default /* GraphQL */ `
     image: String
     whitelist: [ID]
     blacklist: [ID]
+    hobbies: [HobbyActivity]
   }
 `;

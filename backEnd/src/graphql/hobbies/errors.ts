@@ -1,5 +1,5 @@
-import { createError, ErrorConfig } from 'apollo-errors'
+import { createError } from "apollo-errors";
 
-export const NotAuthenticated = createError('NotAuthenticated', {
-    message: 'You are not authenticated.'
-})
+export const NotAuthenticated = createError("NotAuthenticated", {
+  message: "You are not authenticated.",
+});
