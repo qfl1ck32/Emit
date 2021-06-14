@@ -19,9 +19,7 @@ interface ImagePickerResult {
   uri: string;
 }
 
-export const SetupPicture = ({
-  navigation,
-}: SetupNavigationProps<"SetupPicture">) => {
+export const SetupPicture = () => {
   const duckImage = Image.resolveAssetSource(duck).uri;
 
   const [image, setImage] = useState<string>(duckImage);

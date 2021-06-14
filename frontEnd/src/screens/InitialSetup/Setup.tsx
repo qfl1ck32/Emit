@@ -8,7 +8,6 @@ import { View, Button } from "react-native";
 import { SetupName } from "./SetupName";
 import { SetupPicture } from "./SetupPicture";
 import { SetupHobbies } from "./SetupHobbies";
-import { DoneSetup } from "./DoneSetup";
 
 import { logout } from "../../services";
 
@@ -36,7 +35,6 @@ export const Setup: React.FC<{}> = () => {
         <SetupStack.Screen name="SetupName" component={SetupName} />
         <SetupStack.Screen name="SetupHobbies" component={SetupHobbies} />
         <SetupStack.Screen name="SetupPicture" component={SetupPicture} />
-        <SetupStack.Screen name="DoneSetup" component={DoneSetup} />
       </SetupStack.Navigator>
     </NavigationContainer>
   );
