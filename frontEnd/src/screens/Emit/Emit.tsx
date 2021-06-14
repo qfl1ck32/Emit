@@ -15,7 +15,7 @@ import {
 import { TextInput } from "react-native-paper";
 import { connect } from "react-redux";
 import { Loading, UserInfo } from "../../components";
-import { GET_ALL_USERS } from "../../graphql";
+import { client, EMIT, GET_ALL_USERS } from "../../graphql";
 import { User } from "../../graphql/types/User/User";
 import { rootStore } from "../../Root";
 
@@ -38,7 +38,7 @@ export const EmitScreen: React.FC<{}> = () => {
     );
   }
 
-  const emit = () => {
+  const emit = async () => {
     if (!usersToEmit.length) {
       return Alert.alert(
         "Whoops",
@@ -49,6 +49,17 @@ export const EmitScreen: React.FC<{}> = () => {
     if (!message) {
       return Alert.alert("Whoops", "Where is your message?");
     }
+
+    const { data, errors } = await client.mutate({
+      mutation: EMIT,
+      variables: {
+        users: usersToEmit,
+        message,
+      },
+    });
+
+    console.log(data);
+    console.log(errors);
   };
 
   const users = data?.getAllUsers as User[];
