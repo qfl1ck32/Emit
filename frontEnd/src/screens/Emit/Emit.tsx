@@ -8,7 +8,11 @@ import {
   StyleSheet,
   Image,
   ScrollView,
+  NativeSyntheticEvent,
+  TextInputChangeEventData,
+  Alert,
 } from "react-native";
+import { TextInput } from "react-native-paper";
 import { connect } from "react-redux";
 import { Loading, UserInfo } from "../../components";
 import { GET_ALL_USERS } from "../../graphql";
@@ -16,25 +20,43 @@ import { User } from "../../graphql/types/User/User";
 import { rootStore } from "../../Root";
 
 export const EmitScreen: React.FC<{}> = () => {
-  const { data, loading, error } = useQuery(GET_ALL_USERS);
-
   const me = rootStore.getState().user;
-
-  const [usersToEmit, setUsersToEmit] = useState<string[]>([]);
-
-  const emit = () => {
-    console.log(usersToEmit);
-  };
 
   const whitelist = me.whitelist as string[];
 
-  const users = (data?.getAllUsers as User[]).filter((user) =>
-    whitelist.includes(user._id)
-  );
+  if (!whitelist.length) {
+    return (
+      <View style={[styles.container, styles.header]}>
+        <Text style={styles.text}>You have nobody to emit to.</Text>
+      </View>
+    );
+  }
+
+  const { data, loading, error } = useQuery(GET_ALL_USERS);
+
+  const [usersToEmit, setUsersToEmit] = useState<string[]>([]);
+  const [message, setMessage] = useState<string>("");
+
+  const emit = () => {
+    if (!usersToEmit.length) {
+      return Alert.alert(
+        "Whoops",
+        "You did not choose any of your friends. :("
+      );
+    }
+
+    if (!message) {
+      return Alert.alert("Whoops", "Where is your message?");
+    }
+  };
+
+  const users = data?.getAllUsers as User[];
 
   if (loading) {
     return <Loading />;
   }
+
+  const filteredUsers = users.filter((user) => whitelist.includes(user._id));
 
   const userOnClick = (id: string) =>
     setUsersToEmit((oldUsers) => {
@@ -47,7 +69,7 @@ export const EmitScreen: React.FC<{}> = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <ScrollView style={styles.scrollView}>
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <UserInfo
               isInWhitelist={usersToEmit.includes(user._id)}
               key={user._id}
@@ -56,6 +78,14 @@ export const EmitScreen: React.FC<{}> = () => {
             />
           ))}
         </ScrollView>
+
+        <TextInput
+          value={message}
+          onChangeText={setMessage}
+          style={styles.message}
+          placeholder="Emit message"
+        />
+
         <Button onPress={emit} title="Emit" />
       </View>
     </View>
@@ -72,6 +102,13 @@ const styles = StyleSheet.create({
     flex: 10,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  message: {
+    maxHeight: 40,
+    marginTop: 10,
+    marginBottom: 10,
+    width: "85%",
   },
 
   button: {
