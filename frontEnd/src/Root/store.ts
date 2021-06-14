@@ -39,6 +39,7 @@ const reducer = (prevState: any, action: ReducerAction): ReducerState => {
         ...prevState,
         tokens: action.tokens,
         isLoading: false,
+        user: action.user,
       };
 
     case ActionType.SIGN_IN:

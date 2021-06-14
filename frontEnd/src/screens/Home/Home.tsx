@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { Loading, UserInfo } from "../../components";
 import { GET_ALL_USERS } from "../../graphql/queries/user/getAllUsers";
 import { User } from "../../graphql/types/User/User";
+import { rootStore } from "../../Root";
 import { MainTabNavigationProps } from "../MainTab/interfaces";
 
 export const HomeComponent: React.FC<MainTabNavigationProps<"Home">> = ({
@@ -13,6 +14,11 @@ export const HomeComponent: React.FC<MainTabNavigationProps<"Home">> = ({
   const { data, loading, error } = useQuery(GET_ALL_USERS);
 
   const users = data?.getAllUsers as User[];
+
+  const me = rootStore.getState().user;
+
+  const whitelist = me.whitelist as string[];
+  const blacklist = me.blacklist as string[];
 
   const userOnClick = (id: string) => {
     navigation.navigate("ProfileStack", {
@@ -32,8 +38,14 @@ export const HomeComponent: React.FC<MainTabNavigationProps<"Home">> = ({
           <View>
             <Text style={styles.textHeader}>Users</Text>
             <ScrollView style={styles.scrollView}>
-              {users.map((user, index) => (
-                <UserInfo key={index} {...user} userOnClick={userOnClick} />
+              {users.map((user) => (
+                <UserInfo
+                  isInWhitelist={whitelist?.includes(user._id)}
+                  isInBlacklist={blacklist?.includes(user._id)}
+                  key={user._id}
+                  {...user}
+                  userOnClick={userOnClick}
+                />
               ))}
             </ScrollView>
           </View>

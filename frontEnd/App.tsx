@@ -20,6 +20,7 @@ const App = () => {
     const bootstrapAsync = async () => {
       const accessToken = await SecureStore.getItemAsync("accessToken");
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
+      const user = await SecureStore.getItemAsync("user");
 
       return rootStore.dispatch({
         type: ActionType.RESTORE_TOKENS,
@@ -29,6 +30,7 @@ const App = () => {
               accessToken,
               refreshToken,
             },
+        user: JSON.parse(user as string),
       });
     };
 

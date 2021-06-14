@@ -33,6 +33,7 @@ export const login = async (username: string, password: string) => {
 
     await setItemAsync("accessToken", accessToken);
     await setItemAsync("refreshToken", refreshToken);
+    await setItemAsync("user", JSON.stringify(user));
 
     rootStore.dispatch({
       type: ActionType.SIGN_IN,
@@ -40,6 +41,5 @@ export const login = async (username: string, password: string) => {
       user,
     });
   }
-
   return { err: errors?.[0].message };
 };
