@@ -20,9 +20,15 @@ import { User } from "../../graphql/types/User/User";
 import { rootStore } from "../../Root";
 
 export const EmitScreen: React.FC<{}> = () => {
+  const { data, loading } = useQuery(GET_ALL_USERS);
+  const [usersToEmit, setUsersToEmit] = useState<string[]>([]);
+  const [message, setMessage] = useState<string>("");
+
   const me = rootStore.getState().user;
 
   const whitelist = me.whitelist as string[];
+
+  console.log(whitelist);
 
   if (!whitelist.length) {
     return (
@@ -31,11 +37,6 @@ export const EmitScreen: React.FC<{}> = () => {
       </View>
     );
   }
-
-  const { data, loading, error } = useQuery(GET_ALL_USERS);
-
-  const [usersToEmit, setUsersToEmit] = useState<string[]>([]);
-  const [message, setMessage] = useState<string>("");
 
   const emit = () => {
     if (!usersToEmit.length) {
