@@ -50,16 +50,26 @@ export const EmitScreen: React.FC<{}> = () => {
       return Alert.alert("Whoops", "Where is your message?");
     }
 
-    const { data, errors } = await client.mutate({
-      mutation: EMIT,
-      variables: {
-        users: usersToEmit,
-        message,
-      },
-    });
+    await client
+      .mutate({
+        mutation: EMIT,
+        variables: {
+          users: usersToEmit,
+          message,
+        },
+      })
+      .then(() => {
+        Alert.alert(
+          "Yay!",
+          "You successfully emited the message. Check the status in the Home tab!"
+        );
 
-    console.log(data);
-    console.log(errors);
+        setMessage("");
+        setUsersToEmit([]);
+      })
+      .catch((err: Error) =>
+        Alert.alert("Whoops", `Something wrong happened: ${err.message}`)
+      );
   };
 
   const users = data?.getAllUsers as User[];
@@ -95,7 +105,7 @@ export const EmitScreen: React.FC<{}> = () => {
           value={message}
           onChangeText={setMessage}
           style={styles.message}
-          placeholder="Emit message"
+          placeholder="Emit message!"
         />
 
         <Button onPress={emit} title="Emit" />

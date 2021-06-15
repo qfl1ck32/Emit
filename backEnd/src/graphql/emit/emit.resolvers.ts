@@ -1,5 +1,6 @@
-import { IUser } from "../../models";
+import { Emit, EmitModel, IUser, UserModel } from "../../models";
 import { NotAuthenticated } from "../hobbies/errors";
+import { ObjectId } from "mongodb";
 
 export default {
   Mutation: {
@@ -16,9 +17,29 @@ export default {
 
       const { users, message } = data;
 
-      console.log(users);
-      console.log(message);
-      console.log(user);
+      const usersToEmitIDs = users.map((id) => new ObjectId(id));
+
+      const dbUsers = await UserModel.find({
+        _id: {
+          $in: usersToEmitIDs,
+        },
+      });
+
+      let invited = [];
+
+      for (const dbUser of dbUsers) {
+        if (dbUser.whitelist.includes(user._id)) {
+          invited.push(dbUser._id);
+        }
+      }
+
+      await EmitModel.create({
+        byUserId: new ObjectId(user._id),
+        attendants: [],
+        invited,
+        message,
+      });
+
       return true;
     },
   },

@@ -51,6 +51,10 @@ export const UserSchema = new Schema({
   blacklist: {
     type: Array,
   },
+
+  emits: {
+    type: Array,
+  },
 });
 
 export interface IUser {
@@ -73,6 +77,15 @@ export interface IUser {
 
   whitelist: ObjectId[];
   blacklist: ObjectId[];
+
+  emits: Emit[];
+}
+
+export interface Emit {
+  byUserId: ObjectId;
+  invited: ObjectId[];
+  attendants: ObjectId[];
+  message: string;
 }
 
 export const UserModel = model<IUser>("User", UserSchema);

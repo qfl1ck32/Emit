@@ -13,6 +13,13 @@ export const LOGIN = gql`
         isSetUp
         whitelist
         blacklist
+        emits {
+          _id
+          invited
+          byUserId
+          message
+          attendants
+        }
       }
     }
   }

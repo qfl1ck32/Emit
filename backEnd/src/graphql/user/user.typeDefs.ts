@@ -20,5 +20,14 @@ export default /* GraphQL */ `
     whitelist: [ID]
     blacklist: [ID]
     hobbies: [HobbyActivity]
+    emits: [Emit]
+  }
+
+  type Emit {
+    _id: ID!
+    byUserId: ID!
+    invited: [ID]
+    attendants: [ID]
+    message: String!
   }
 `;
