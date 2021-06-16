@@ -1,7 +1,8 @@
 # Emit
 
-User Stories
+[User Stories](https://docs.google.com/spreadsheets/d/1HBuzMWoQQiJ0pMVYua_5iId5VPkhw6Awt54jhMfjGPY/edit#gid=0)
 
-https://docs.google.com/spreadsheets/d/1HBuzMWoQQiJ0pMVYua_5iId5VPkhw6Awt54jhMfjGPY/edit#gid=0
+[Mind meister](https://www.mindmeister.com/1827970421?t=ReTxd7VS5v#)
 
-https://www.mindmeister.com/1827970421?t=ReTxd7VS5v#
+[Demo](https://www.youtube.com/watch?v=WpEhKr-TOpE)
+
